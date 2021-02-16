@@ -31,14 +31,14 @@ type Property struct {
 }
 
 func (p Property) String() string {
-	return fmt.Sprintf("%s: %v", p.Name, p.Type)
+	return fmt.Sprintf("%-15s: %v", p.Name, p.Type)
 }
 
 type PropertyValue struct {
 	Repr []string `datastore:"property_representation"`
 }
 
-func getKinds(ctx context.Context, s *config.Project) ([]*Kind, error) {
+func GetKinds(ctx context.Context, s *config.Project, names ...string) ([]*Kind, error) {
 
 	//namespace 指定の場合
 	cli, err := datastore.NewClient(ctx, s.ProjectID)
@@ -58,9 +58,28 @@ func getKinds(ctx context.Context, s *config.Project) ([]*Kind, error) {
 
 	for idx, key := range keys {
 		prop := props[idx]
-		p := Property{key.Name, prop.Repr}
 		name := key.Parent.Name
-		kindMap[name] = append(kindMap[name], &p)
+
+		ok := false
+		if len(names) > 0 {
+			for _, elm := range names {
+				if elm == name {
+					ok = true
+					break
+				}
+			}
+		} else {
+			ok = true
+		}
+
+		if ok {
+			p := Property{key.Name, prop.Repr}
+			kindMap[name] = append(kindMap[name], &p)
+		}
+	}
+
+	if len(names) != 0 && len(names) != len(kindMap) {
+		return nil, fmt.Errorf("NotFound KindName...")
 	}
 
 	var kinds []*Kind
@@ -72,25 +91,7 @@ func getKinds(ctx context.Context, s *config.Project) ([]*Kind, error) {
 	return kinds, nil
 }
 
-func ViewAllKind(ctx context.Context, s *config.Project) error {
-	kinds, err := getKinds(context.Background(), s)
-	if err != nil {
-		return xerrors.Errorf("datastore.getKinds() error: %w", err)
-	}
-
-	for _, kind := range kinds {
-		fmt.Println("=================")
-		fmt.Println(kind)
-	}
-	return nil
-}
-
-func RemoveAllKind(ctx context.Context, s *config.Project) error {
-
-	kinds, err := getKinds(ctx, s)
-	if err != nil {
-		return xerrors.Errorf("getKinds() error: %w", err)
-	}
+func RemoveKind(ctx context.Context, s *config.Project, name string) error {
 
 	cli, err := datastore.NewClient(ctx, s.ProjectID)
 	if err != nil {
@@ -99,20 +100,17 @@ func RemoveAllKind(ctx context.Context, s *config.Project) error {
 
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 
-		for _, kind := range kinds {
+		fmt.Println("---------------", name)
 
-			name := kind.Name
+		q := datastore.NewQuery(name).KeysOnly()
+		keys, err := cli.GetAll(ctx, q, nil)
+		if err != nil {
+			return xerrors.Errorf("GetAll()[%s]: %w", name, err)
+		}
 
-			q := datastore.NewQuery(name).KeysOnly()
-			keys, err := cli.GetAll(ctx, q, nil)
-			if err != nil {
-				return xerrors.Errorf("GetAll()[%s]: %w", name, err)
-			}
-
-			err = tx.DeleteMulti(keys)
-			if err != nil {
-				return xerrors.Errorf("delete multi[%s]: %w", name, err)
-			}
+		err = tx.DeleteMulti(keys)
+		if err != nil {
+			return xerrors.Errorf("delete multi[%s]: %w", name, err)
 		}
 
 		return nil

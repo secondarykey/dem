@@ -3,8 +3,10 @@ package dem
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 
+	"github.com/gorilla/mux"
 	"github.com/secondarykey/dem/config"
 	"github.com/secondarykey/dem/datastore"
 	"golang.org/x/xerrors"
@@ -22,6 +24,16 @@ const (
 	DefaultEndpoint          = "localhost:8081"
 )
 
+func Listen() error {
+
+	s := mux.NewRouter()
+	s.HandleFunc("/", indexHandler)
+	s.HandleFunc("/{id}/", kindHandler)
+	s.HandleFunc("/{id}/{kind}", entityHandler)
+
+	return http.ListenAndServe(":8088", s)
+}
+
 func setEnv() *config.Project {
 	var s config.Project
 	s.ProjectID = "section"
@@ -32,37 +44,67 @@ func setEnv() *config.Project {
 	return &s
 }
 
-func Remove(names ...string) error {
+func getKinds(names ...string) ([]*datastore.Kind, error) {
+	s := setEnv()
+	ctx := context.Background()
+
+	kinds, err := datastore.GetKinds(ctx, s, names...)
+	if err != nil {
+		return nil, xerrors.Errorf("datastore.GetKinds() error: %w", err)
+	}
+	return kinds, nil
+}
+
+func RemoveEntity(names ...string) error {
+
+	kinds, err := getKinds(names...)
+	if err != nil {
+		return xerrors.Errorf("getKinds() error: %w", err)
+	}
 
 	s := setEnv()
 	ctx := context.Background()
-	err := datastore.RemoveAllKind(ctx, s)
-	if err != nil {
-		return xerrors.Errorf("datastore.RemoveAllKind() error: %w", err)
+	for _, kind := range kinds {
+		err := datastore.RemoveKind(ctx, s, kind.Name)
+		if err != nil {
+			return xerrors.Errorf("datastore.RemoveAllKind() error: %w", err)
+		}
 	}
 	return nil
 }
 
-func ViewSchema() error {
-	s := setEnv()
-	err := datastore.ViewAllKind(context.Background(), s)
+func ViewKind(names ...string) error {
+	kinds, err := getKinds(names...)
 	if err != nil {
-		return xerrors.Errorf("datastore.ViewAllKind() error: %w", err)
+		return xerrors.Errorf("getKinds() error: %w", err)
 	}
+
+	for _, kind := range kinds {
+		fmt.Println(kind)
+	}
+
 	return nil
 }
 
-func ViewEntity(kind string) error {
+func ViewEntity(names ...string) error {
 
 	s := setEnv()
 
-	entities, err := datastore.GetEntities(context.Background(), s, kind)
+	kinds, err := getKinds(names...)
 	if err != nil {
-		return xerrors.Errorf("GetEntities() error: %w", err)
+		return xerrors.Errorf("getKinds() error: %w", err)
 	}
 
-	for _, elm := range entities {
-		fmt.Println(elm)
+	for _, kind := range kinds {
+		entities, err := datastore.GetEntities(context.Background(), s, kind.Name)
+		if err != nil {
+			return xerrors.Errorf("GetEntities() error: %w", err)
+		}
+
+		fmt.Println("################### " + kind.Name)
+		for _, elm := range entities {
+			fmt.Println(elm)
+		}
 	}
 
 	return nil
