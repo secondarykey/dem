@@ -45,6 +45,7 @@ func Register() error {
 
 	r.HandleFunc("/{id}/", viewProjectHandler)
 	r.HandleFunc("/{id}/{kind}/", viewKindHandler)
+	r.HandleFunc("/{id}/{kind}/remove", removeEntityHandler)
 
 	r.HandleFunc("/", indexHandler)
 

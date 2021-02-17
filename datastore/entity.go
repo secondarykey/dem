@@ -3,6 +3,7 @@ package datastore
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"cloud.google.com/go/datastore"
@@ -76,4 +77,51 @@ func GetEntities(ctx context.Context, p *config.Project, name string) ([]*Entity
 	}
 
 	return dst, nil
+}
+
+func RemoveEntity(ctx context.Context, p *config.Project, name string, ids []string) error {
+
+	setEnv(p)
+	cli, err := datastore.NewClient(ctx, p.ProjectID)
+	if err != nil {
+		return xerrors.Errorf("datastore.NewClient() error: %w", err)
+	}
+
+	kinds, err := GetKinds(ctx, p, name)
+	if err != nil {
+		return xerrors.Errorf("GetKinds() error: %w", err)
+	}
+
+	kind := kinds[0]
+
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		keys := make([]*datastore.Key, len(ids))
+		for idx, v := range ids {
+			var key *datastore.Key
+			switch kind.KeyType {
+			case IntKeyType:
+				i, err := strconv.ParseInt(v, 10, 64)
+				if err != nil {
+					return xerrors.Errorf("strconv.ParseInt() error: %w", err)
+				}
+				key = datastore.IDKey(name, i, nil)
+			case StringKeyType:
+				key = datastore.NameKey(name, v, nil)
+			}
+			keys[idx] = key
+		}
+
+		err := tx.DeleteMulti(keys)
+		if err != nil {
+			return xerrors.Errorf("transaction remove all error: %w", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return xerrors.Errorf("remove transaction error: %w", err)
+	}
+
+	return nil
 }
