@@ -16,9 +16,4 @@ The list of endpoints is saved in $HOME/.dem.gob(default)
 
 Read Help for details on the arguments.
 
-# Use
-
-1. Add an endpoint.
-2. Select namespace.
-3. Select kind.
 
