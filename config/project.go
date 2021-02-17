@@ -1,11 +1,6 @@
 package config
 
-import (
-	"encoding/gob"
-	"os"
-
-	"golang.org/x/xerrors"
-)
+import "github.com/google/uuid"
 
 type Project struct {
 	ID        string
@@ -13,53 +8,23 @@ type Project struct {
 	Endpoint  string
 }
 
-type Setting struct {
-	Projects []*Project
+func NewProject(endpoint string, projectid string) *Project {
+	p := Project{}
+	p.Endpoint = endpoint
+	p.ProjectID = projectid
+	p.ID = uuid.New().String()
+	return &p
 }
 
-func NewSetting() *Setting {
-	s := Setting{}
-	s.Projects = make([]*Project, 0)
-	return &s
+func GetProjects() ([]*Project, error) {
+	return currentSetting.Projects, nil
 }
 
-func (s *Setting) AddProject(p *Project) {
-	s.Projects = append(s.Projects, p)
-}
-
-func (s *Setting) Read(name string) error {
-
-	if _, err := os.Stat(name); err != nil {
-		return xerrors.Errorf("not exist: %w", err)
+func GetProject(id string) *Project {
+	for _, p := range currentSetting.Projects {
+		if p.ID == id {
+			return p
+		}
 	}
-
-	f, err := os.Open(name)
-	if err != nil {
-		return xerrors.Errorf("Setting file open error: %w", err)
-	}
-	defer f.Close()
-
-	dec := gob.NewDecoder(f)
-	err = dec.Decode(s)
-	if err != nil {
-		return xerrors.Errorf("Setting decode error: %w", err)
-	}
-
-	return nil
-}
-
-func (s *Setting) Write(name string) error {
-	f, err := os.Create(name)
-	if err != nil {
-		return xerrors.Errorf("Setting file open error: %w", err)
-	}
-	defer f.Close()
-
-	enc := gob.NewEncoder(f)
-	err = enc.Encode(s)
-	if err != nil {
-		return xerrors.Errorf("Setting encode error: %w", err)
-	}
-
 	return nil
 }

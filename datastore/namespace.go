@@ -10,10 +10,12 @@ import (
 
 type Namespace string
 
-func getNamespaces(ctx context.Context, s *config.Project) ([]*Namespace, error) {
+func getNamespaces(ctx context.Context, p *config.Project) ([]*Namespace, error) {
+
+	setEnv(p)
 
 	//namespace 指定の場合
-	cli, err := datastore.NewClient(ctx, s.ProjectID)
+	cli, err := datastore.NewClient(ctx, p.ProjectID)
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.NewClient() error: %w", err)
 	}

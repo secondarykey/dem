@@ -24,8 +24,6 @@ func (e *Entity) Load(props []datastore.Property) error {
 	e.Values = make(map[string]interface{})
 	for _, elm := range props {
 		e.Values[elm.Name] = elm.Value
-		//TODO １度は型を作成する
-		//reflect.Typeof()
 	}
 	return nil
 }
@@ -50,7 +48,12 @@ func (e *Entity) String() string {
 	b.WriteString(fmt.Sprintf("=== Key(%d)[%s]", e.Key.ID, e.Key.Name))
 
 	for key, elm := range e.Values {
-		b.WriteString(fmt.Sprintf("\n  %-12s:%v", key, elm))
+		line := fmt.Sprintf("%v", elm)
+		if len(line) > 100 {
+			line = line[0:84] + "..."
+		}
+
+		b.WriteString(fmt.Sprintf("\n  %-12s:%v", key, line))
 	}
 
 	return b.String()
@@ -58,6 +61,7 @@ func (e *Entity) String() string {
 
 func GetEntities(ctx context.Context, p *config.Project, name string) ([]*Entity, error) {
 
+	setEnv(p)
 	cli, err := datastore.NewClient(ctx, p.ProjectID)
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.NewClient() error: %w", err)
