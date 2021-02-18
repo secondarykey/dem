@@ -29,16 +29,18 @@
       <div class="drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
 
         <header class="drawer-header">
-          <span></span>
+          <span>Select Project...</span>
         </header>
 
         <nav class="navigation mdl-navigation mdl-color--blue-grey-800">
 
 {{ range .Projects }}
-          <a class="mdl-navigation__link" href="/{{.ID}}/"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">forward</i>{{.Endpoint}}<br>{{ .ProjectID }}</a>
+          <a class="mdl-navigation__link" href="/{{.ID}}/"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">forward</i>{{.Endpoint}}[{{ .ProjectID }}]</a>
 {{ end }}
 
           <a class="mdl-navigation__link" id="registerProject"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">add_circle</i>New Project</a>
+
+          <div class="mdl-layout-spacer"></div>
 
           <a class="mdl-navigation__link" href="https://github.com/secondarykey/dem"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">help_outline</i><span class="visuallyhidden">Help</span></a>
 

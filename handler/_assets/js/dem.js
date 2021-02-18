@@ -228,6 +228,17 @@ document.addEventListener("DOMContentLoaded", function() {
     };
     xhr.send("ids=" + JSON.stringify(ids));
   }
+});
 
 
+var layout = document.querySelector(".mdl-layout");
+var clicked = false;
+layout.addEventListener("mdl-componentupgraded",function(e) {
+  if ( projectID == "empty" ) {
+    var btn = document.querySelector(".mdl-layout__drawer-button");
+    if (btn != null && !clicked) { 
+      btn.click();
+      clicked = true;
+    }
+  }
 });

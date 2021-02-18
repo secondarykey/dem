@@ -34,6 +34,16 @@ html, body {
 .drawer .navigation {
   z-index: -2;
 }
+
+.mdl-layout__drawer {
+  width: 500px;
+  left: -250px;
+}
+
+.mdl-layout__drawer.is-visible {
+  left: 0;
+}
+
 /* END iOS Safari specific workaround */
 .drawer .mdl-menu .mdl-menu__item {
   display: -webkit-flex;
