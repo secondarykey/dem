@@ -12,30 +12,34 @@
     <link rel="stylesheet" href="/assets/css/styles.css">
 
 {{ if .DarkMode }}
+  {{$back  := "#011024" }}
+  {{$text  := "#bbbbbb" }}
+  {{$hover := "#1a1a1a" }}
+
     <!-- DarkMode -->
     <style>
       .mdl-color--grey-100 {
-        background:#555555 !important; 
+        background:{{$back}} !important; 
       }
 
       .material-icons {
-        color:#dddddd !important;
+        color:{{$text}} !important;
       }
       .mdl-color-text--grey-600 {
-        color:#dddddd !important;
+        color:{{$text}} !important;
       }
       .mdl-data-table th {
-        color:#dddddd !important;
+        color:{{$text}} !important;
       }
 
       .list-item:hover {
-        background:#777777 !important; 
+        background:{{$hover}} !important; 
       }
       .mdl-data-table tbody tr:hover td{
-        background:#777777 !important; 
+        background:{{$hover}} !important; 
       }
       .mdl-data-table tbody tr:hover {
-        background:#777777 !important; 
+        background:{{$hover}} !important; 
       }
     </style>
 {{ end }}
