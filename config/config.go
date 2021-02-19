@@ -84,3 +84,17 @@ func AddProject(p *Project) error {
 	}
 	return nil
 }
+
+func GetDarkMode() bool {
+	return currentSetting.DarkMode
+}
+
+func SetDarkMode(v bool) error {
+	currentSetting.DarkMode = v
+	conf := GetViewer()
+	err := currentSetting.write(conf.ConfigFile)
+	if err != nil {
+		return xerrors.Errorf("Setting write() error: %w", err)
+	}
+	return nil
+}

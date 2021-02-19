@@ -230,6 +230,11 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 
+var darkMode = document.querySelector('#darkmode');
+darkMode.addEventListener('change', function() {
+  location.href = "/view/dark/" + darkMode.checked;
+});
+
 
 var layout = document.querySelector(".mdl-layout");
 var clicked = false;
@@ -242,3 +247,5 @@ layout.addEventListener("mdl-componentupgraded",function(e) {
     }
   }
 });
+
+

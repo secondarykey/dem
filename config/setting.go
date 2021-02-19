@@ -10,6 +10,7 @@ import (
 var currentSetting *Setting
 
 type Setting struct {
+	DarkMode bool
 	Projects []*Project
 }
 
@@ -21,6 +22,14 @@ func NewSetting() *Setting {
 
 func (s *Setting) AddProject(p *Project) {
 	s.Projects = append(s.Projects, p)
+}
+
+func (s *Setting) SetDarkMode(f bool) {
+	s.DarkMode = f
+}
+
+func (s *Setting) GetDarkMode() bool {
+	return s.DarkMode
 }
 
 func (s *Setting) read(name string) error {

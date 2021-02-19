@@ -5,6 +5,12 @@ We didn't introduce a big framework to make io easier for you to change.
 
 I have no intention of using it for anything other than the emulator, but it may be possible if I devise something around authentication.
 
+# Install
+
+go install github.com/secondarykey/dem/_cmd/dem-view
+
+or dem release.
+
 # Run
 
 ```
