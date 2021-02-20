@@ -54,8 +54,25 @@
 
         <div class="mdl-layout__header-row">
           <span class="mdl-layout-title">{{ .Title }}</span>
-          <!-- namespaces -->
+
+          <div id="ns-dropdown" class="dropdown" style="width:140px;">
+            <div id="nsLabel" class="mdl-color-text--grey-600">Namespace:</div>
+            <span id="ns-text" class="mdl-color-text--grey-600">{{ .Namespace }}</span>
+            <div class="mdl-layout-spacer"></div>
+            <button id="nsBtn" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+              <i class="material-icons" role="presentation">arrow_drop_down</i>
+              <span class="visuallyhidden">Namespace</span>
+            </button>
+            <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="nsBtn">
+              <li class="mdl-menu__item ns-list">10</li>
+              <li class="mdl-menu__item ns-list">20</li>
+              <li class="mdl-menu__item ns-list">50</li>
+              <li class="mdl-menu__item ns-list">100</li>
+            </ul>
+          </div>
+
           <div class="mdl-layout-spacer"></div>
+
         </div>
 
       </header>
@@ -106,7 +123,7 @@
               <div class="mdl-layout-spacer"></div>
               <button id="limitBtn" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
                 <i class="material-icons" role="presentation">arrow_drop_down</i>
-                <span class="visuallyhidden">Limits:</span>
+                <span class="visuallyhidden">Limit</span>
               </button>
               <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="limitBtn">
                 <li class="mdl-menu__item limit-list">10</li>

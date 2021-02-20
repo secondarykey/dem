@@ -20,6 +20,20 @@ import (
 var embTemplates embed.FS
 var templates fs.FS
 
+type IndexDto struct {
+	Projects  []*config.Project
+	Kinds     []*datastore.Kind
+	Title     string
+	ID        string
+	DarkMode  bool
+	Limit     int
+	Namespace string
+}
+
+const (
+	defaultNamespace = "[default]"
+)
+
 func init() {
 	var err error
 	templates, err = fs.Sub(embTemplates, "_templates")
@@ -56,15 +70,6 @@ func Register() error {
 	return nil
 }
 
-type IndexDto struct {
-	Projects []*config.Project
-	Kinds    []*datastore.Kind
-	Title    string
-	ID       string
-	DarkMode bool
-	Limit    int
-}
-
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	projects, err := config.GetProjects()
@@ -79,6 +84,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	dto.ID = "empty"
 	dto.DarkMode = config.GetDarkMode()
 	dto.Limit = config.GetLimit()
+	dto.Namespace = defaultNamespace
 
 	err = viewMain(w, dto)
 	if err != nil {
@@ -134,6 +140,7 @@ func viewProjectHandler(w http.ResponseWriter, r *http.Request) {
 	dto.ID = p.ID
 	dto.DarkMode = config.GetDarkMode()
 	dto.Limit = config.GetLimit()
+	dto.Namespace = defaultNamespace
 
 	//現在の設定でKindを取得
 	err = viewMain(w, dto)

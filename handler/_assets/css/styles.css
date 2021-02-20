@@ -170,3 +170,20 @@ html, body {
   font-size:18px;
 }
 
+#ns-dropdown {
+  width:200px;
+}
+
+#nsLabel {
+  font-size:18px;
+  text-indent:10px;
+}
+
+#ns-text {
+  width:200px;
+  font-size:18px;
+}
+
+.ns-list {
+  font-size:18px;
+}

@@ -12,11 +12,6 @@ import (
 	"golang.org/x/xerrors"
 )
 
-const (
-	DefaultNamespace = "[default]"
-	DefaultProjectID = "[empty]"
-)
-
 func SetConsoleOptions(opts ...config.ConsoleOption) error {
 	err := config.SetConsole(opts)
 	if err != nil {
@@ -44,7 +39,8 @@ func Listen(opts ...config.ViewerOption) error {
 	}
 
 	server := fmt.Sprintf(":%d", conf.Port)
-	fmt.Printf("Listen HTTP Server[%s]\n", server)
+	fmt.Println("Datastore Emulator Viewer")
+	fmt.Printf("Listen HTTP Server [http://localhost%s]\n", server)
 
 	return http.ListenAndServe(server, nil)
 }
