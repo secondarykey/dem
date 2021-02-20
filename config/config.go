@@ -12,10 +12,12 @@ func init() {
 	console.Host = "localhost"
 	console.ProjectID = "default"
 	console.Namespace = "[default]"
+	console.Limit = 20
 
 	viewer := ViewerConfig{}
 	viewer.Port = 8088
 	viewer.ConfigFile = "$HOME/.dem.gob"
+	viewer.Limit = 20
 
 	gViewer = &viewer
 	gConsole = &console
@@ -26,11 +28,13 @@ type ConsoleConfig struct {
 	Host      string
 	Port      int
 	Namespace string
+	Limit     int
 }
 
 type ViewerConfig struct {
 	Port       int
 	ConfigFile string
+	Limit      int
 }
 
 var (
@@ -65,8 +69,9 @@ func SetConsole(opts []ConsoleOption) error {
 		}
 	}
 
-	//currentSetting = NewSetting()
+	currentSetting = NewSetting()
 	currentProject = NewProject(fmt.Sprintf("%s:%d", gConsole.Host, gConsole.Port), gConsole.ProjectID)
+	currentSetting.limit = gConsole.Limit
 
 	return nil
 }
@@ -79,6 +84,8 @@ func LoadSetting() error {
 	if err != nil {
 		return xerrors.Errorf("Setting Read() error: %w", err)
 	}
+
+	currentSetting.limit = conf.Limit
 
 	return nil
 }
@@ -106,4 +113,12 @@ func SetDarkMode(v bool) error {
 		return xerrors.Errorf("Setting write() error: %w", err)
 	}
 	return nil
+}
+
+func SetLimit(v int) {
+	currentSetting.limit = v
+}
+
+func GetLimit() int {
+	return currentSetting.limit
 }

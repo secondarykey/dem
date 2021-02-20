@@ -45,6 +45,7 @@ func Register() error {
 	r.HandleFunc("/namespace/change", namespaceHandler)
 
 	r.HandleFunc("/kind/view/{kind}/{cursor}", viewKindHandler)
+	r.HandleFunc("/entity/limit/{kind}/{limit}", changeLimitHandler)
 	r.HandleFunc("/entity/remove/{kind}", removeEntityHandler)
 
 	r.HandleFunc("/{id}/", viewProjectHandler)
@@ -61,6 +62,7 @@ type IndexDto struct {
 	Title    string
 	ID       string
 	DarkMode bool
+	Limit    int
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +72,13 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	dto := IndexDto{projects, nil, "Select Project", "empty", config.GetDarkMode()}
+	dto := IndexDto{}
+	dto.Projects = projects
+	dto.Kinds = nil
+	dto.Title = "Select Project"
+	dto.ID = "empty"
+	dto.DarkMode = config.GetDarkMode()
+	dto.Limit = config.GetLimit()
 
 	err = viewMain(w, dto)
 	if err != nil {
@@ -119,7 +127,13 @@ func viewProjectHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dto := IndexDto{projects, kinds, fmt.Sprintf("%s[%s]", p.Endpoint, p.ProjectID), p.ID, config.GetDarkMode()}
+	dto := IndexDto{}
+	dto.Projects = projects
+	dto.Kinds = kinds
+	dto.Title = fmt.Sprintf("%s[%s]", p.Endpoint, p.ProjectID)
+	dto.ID = p.ID
+	dto.DarkMode = config.GetDarkMode()
+	dto.Limit = config.GetLimit()
 
 	//現在の設定でKindを取得
 	err = viewMain(w, dto)

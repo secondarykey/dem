@@ -13,9 +13,9 @@
 
 {{ if .DarkMode }}
 
-  {{$back  := "#161b22" }}
-  {{$text  := "#cccccc" }}
-  {{$hover := "#222222" }}
+  {{ $back  := "#161b22" }}
+  {{ $text  := "#cccccc" }}
+  {{ $hover := "#222222" }}
 
     <!-- DarkMode -->
     <style>
@@ -100,6 +100,23 @@
 
           <div class="mdl-cell mdl-cell--10-col">
 
+            <div id="limit-dropdown" class="dropdown" style="width:140px;">
+              <div id="limitLabel" class="mdl-color-text--grey-600">Limit:</div>
+              <span id="limit-text" class="mdl-color-text--grey-600">{{ .Limit }}</span>
+              <div class="mdl-layout-spacer"></div>
+              <button id="limitBtn" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+                <i class="material-icons" role="presentation">arrow_drop_down</i>
+                <span class="visuallyhidden">Limits:</span>
+              </button>
+              <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="limitBtn">
+                <li class="mdl-menu__item limit-list">10</li>
+                <li class="mdl-menu__item limit-list">20</li>
+                <li class="mdl-menu__item limit-list">50</li>
+                <li class="mdl-menu__item limit-list">100</li>
+              </ul>
+            </div>
+
+
             <table id="view-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp mdl-color--grey-100 mdl-color-text--grey-600">
               <thead>
                 <tr id="table-header"></tr>
@@ -134,11 +151,17 @@
       </dialog>
     </div>
 
-    <button id="editBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" disabled>
-      EDIT
+    <button id="viewBtnNE" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored view-btn" disabled>
+      VIEW 
+    </button>
+    <button id="viewBtnSE" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored view-btn" disabled>
+      VIEW 
     </button>
 
-    <button id="deleteBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" disabled>
+    <button id="removeBtnNE" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent remove-btn" disabled>
+      DELETE
+    </button>
+    <button id="removeBtnSE" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent remove-btn" disabled>
       DELETE
     </button>
 

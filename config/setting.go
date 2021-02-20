@@ -12,6 +12,8 @@ var currentSetting *Setting
 type Setting struct {
 	DarkMode bool
 	Projects []*Project
+
+	limit int //not gob
 }
 
 func NewSetting() *Setting {

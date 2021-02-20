@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/secondarykey/dem/config"
 	"github.com/secondarykey/dem/datastore"
 )
 
@@ -40,4 +42,26 @@ func removeEntityHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
+}
+
+func changeLimitHandler(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	limit := vars["limit"]
+	v, err := strconv.Atoi(limit)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	config.SetLimit(v)
+
+	dto := struct {
+		Success bool
+	}{true}
+
+	err = viewJSON(w, dto)
+	if err != nil {
+		log.Println(err)
+	}
 }

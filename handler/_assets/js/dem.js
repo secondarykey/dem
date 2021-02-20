@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function view(kind,cursor) {
 
-    if ( cursor == "" ) {
+    if ( cursor == "start" ) {
       var th = document.getElementById('table-header');
       th.innerHTML = "";
       var td = document.getElementById('table-body');
@@ -90,6 +90,7 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   function createCheckboxLabel(id) {
+
     var label = document.createElement("label");
     label.setAttribute("for",id);
     label.classList.add("mdl-checkbox");
@@ -102,14 +103,14 @@ document.addEventListener("DOMContentLoaded", function() {
     input.setAttribute("id",id);
     input.classList.add("mdl-checkbox__input");
 
-    var btn = document.getElementById("deleteBtn");
-
+    var btns = document.querySelectorAll(".remove-btn");
     input.addEventListener('change', function(e) {
       if ( e.target.checked ) {
-        btn.disabled = false;
+        for ( var i = 0; i < btns.length; i++ ) {
+            btns[i].disabled = false;
+        }
       }
     });
-
     label.appendChild(input);
     return label;
   }
@@ -129,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   function changeCheckAll() {
+
     var table = document.querySelector('table');
     var headerCheckbox = table.querySelector('thead .mdl-data-table__select input');
     var headerCheckHandler = function(event) {
@@ -187,13 +189,18 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   }
 
-  document.querySelector('#deleteBtn').addEventListener('click', function() {
-    deleteRows();
-  });
+  var delBtns = document.querySelectorAll('.remove-btn')
+  for ( var i = 0; i < delBtns.length; i++ )  {     
+    delBtns[i].addEventListener('click', function(e) {
+        deleteRows(delBtns);
+    });
+  }
 
-  function deleteRows() {
+  function deleteRows(delBtns) {
 
-    document.querySelector('#deleteBtn').disable = true;
+    for ( var i = 0; i < delBtns.length; i++ )  {     
+        delBtns[i].disabled = true;
+    }
 
     var table = document.querySelector('table');
     var boxes = table.querySelectorAll('tbody .mdl-checkbox__input');
@@ -206,7 +213,6 @@ document.addEventListener("DOMContentLoaded", function() {
         var row = boxes[i].parentNode.parentNode.parentNode;
         ids.push(boxes[i].id);
         rows.push(row);
-        //row.parentNode.removeChild(row);
       }
     } 
 
@@ -223,11 +229,36 @@ document.addEventListener("DOMContentLoaded", function() {
           }
         } else {
           alert(resp.Message);
-          dialog.close();
         }
     };
     xhr.send("ids=" + JSON.stringify(ids));
   }
+
+  var list = document.querySelectorAll('.limit-list');
+  for ( var i = 0; i < list.length; ++i ) {
+    list[i].addEventListener("click",function(e) {
+      var limit = e.target.textContent;
+      document.getElementById("limit-text").textContent = limit;
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST',"/entity/limit/" + currentKind + "/" + limit);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.responseType = 'json';
+      xhr.onload = function() {
+        var resp = xhr.response;
+          if (resp.Success) {
+            if ( currentKind != "" ) {
+              currentCursor = "start";
+              view(currentKind,currentCursor);
+            }
+          } else {
+            alert(resp.Message);
+          }
+      };
+      xhr.send();
+    });
+  }
+
 });
 
 var darkMode = document.querySelector('#darkmode');
