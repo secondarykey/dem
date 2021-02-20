@@ -1,6 +1,10 @@
 package config
 
-import "golang.org/x/xerrors"
+import (
+	"fmt"
+
+	"golang.org/x/xerrors"
+)
 
 func init() {
 	console := ConsoleConfig{}
@@ -53,12 +57,17 @@ func SetViewer(opts []ViewerOption) error {
 }
 
 func SetConsole(opts []ConsoleOption) error {
+
 	for _, opt := range opts {
 		err := opt(gConsole)
 		if err != nil {
 			return xerrors.Errorf("ConsoleOption set error: %w", err)
 		}
 	}
+
+	//currentSetting = NewSetting()
+	currentProject = NewProject(fmt.Sprintf("%s:%d", gConsole.Host, gConsole.Port), gConsole.ProjectID)
+
 	return nil
 }
 

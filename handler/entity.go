@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/secondarykey/dem/config"
 	"github.com/secondarykey/dem/datastore"
 )
 
@@ -24,11 +23,9 @@ func removeEntityHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	id := vars["id"]
 	kind := vars["kind"]
 
-	p := config.GetProject(id)
-	err = datastore.RemoveEntity(r.Context(), p, kind, ids)
+	err = datastore.RemoveEntity(r.Context(), kind, ids)
 	if err != nil {
 		log.Println(err)
 		return

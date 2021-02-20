@@ -1,5 +1,5 @@
 var currentKind = "";
-var currentCursor = "";
+var currentCursor = "start";
 var projectID = document.querySelector('#settingID').value;
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function() {
   lists.forEach(function(value) {
     value.addEventListener('click', function(e) {
       currentKind = e.target.getAttribute("data-name");
-      currentCursor = "";
+      currentCursor = "start";
       view(currentKind,currentCursor);
     });
   });
@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     var xhr = new XMLHttpRequest();
-    var url = "/" + projectID + "/" + kind + "/" + cursor;
+    var url = "/kind/view/" + kind + "/" + cursor;
 
     xhr.open('POST',url);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
       }
 
-      if ( cursor == "" ) {
+      if ( cursor == "start" ) {
         createHeader(resp.Header);
         changeCheckAll();
       }
@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded", function() {
     } 
 
     var xhr = new XMLHttpRequest();
-    xhr.open('POST',"/" + projectID + "/" + currentKind + "/remove");
+    xhr.open('POST',"/entity/remove/" + currentKind);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.responseType = 'json';
     xhr.onload = function() {

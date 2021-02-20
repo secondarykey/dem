@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"cloud.google.com/go/datastore"
-	"github.com/secondarykey/dem/config"
 	"golang.org/x/xerrors"
 )
 
@@ -85,17 +84,14 @@ func (t KeyType) String() string {
 	return "Undefined"
 }
 
-/*
-type PropertyValue struct {
-	Repr []string `datastore:"property_representation"`
-}
-*/
+func GetKinds(ctx context.Context, names ...string) ([]*Kind, error) {
 
-func GetKinds(ctx context.Context, p *config.Project, names ...string) ([]*Kind, error) {
-
-	setEnv(p)
+	id, err := setEnvironment()
+	if err != nil {
+		return nil, xerrors.Errorf("setEnvironment() error: %w", err)
+	}
 	//namespace 指定の場合
-	cli, err := datastore.NewClient(ctx, p.ProjectID)
+	cli, err := datastore.NewClient(ctx, id)
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.NewClient() error: %w", err)
 	}
@@ -147,10 +143,13 @@ func GetKinds(ctx context.Context, p *config.Project, names ...string) ([]*Kind,
 	return kinds, nil
 }
 
-func RemoveKind(ctx context.Context, p *config.Project, name string) error {
+func RemoveKind(ctx context.Context, name string) error {
 
-	setEnv(p)
-	cli, err := datastore.NewClient(ctx, p.ProjectID)
+	id, err := setEnvironment()
+	if err != nil {
+		return xerrors.Errorf("setEnvironment() error: %w", err)
+	}
+	cli, err := datastore.NewClient(ctx, id)
 	if err != nil {
 		return xerrors.Errorf("datastore.NewClient() error: %w", err)
 	}

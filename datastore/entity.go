@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"cloud.google.com/go/datastore"
-	"github.com/secondarykey/dem/config"
 	"golang.org/x/xerrors"
 )
 
@@ -60,10 +59,14 @@ func (e *Entity) String() string {
 	return b.String()
 }
 
-func GetEntities(ctx context.Context, p *config.Project, name string) ([]*Entity, error) {
+func GetEntities(ctx context.Context, name string) ([]*Entity, error) {
 
-	setEnv(p)
-	cli, err := datastore.NewClient(ctx, p.ProjectID)
+	id, err := setEnvironment()
+	if err != nil {
+		return nil, xerrors.Errorf("setEnvironment() error:%w", err)
+	}
+
+	cli, err := datastore.NewClient(ctx, id)
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.NewClient() error: %w", err)
 	}
@@ -79,15 +82,19 @@ func GetEntities(ctx context.Context, p *config.Project, name string) ([]*Entity
 	return dst, nil
 }
 
-func RemoveEntity(ctx context.Context, p *config.Project, name string, ids []string) error {
+func RemoveEntity(ctx context.Context, name string, ids []string) error {
 
-	setEnv(p)
-	cli, err := datastore.NewClient(ctx, p.ProjectID)
+	id, err := setEnvironment()
+	if err != nil {
+		return xerrors.Errorf("setEnvironment() error: %w", err)
+	}
+
+	cli, err := datastore.NewClient(ctx, id)
 	if err != nil {
 		return xerrors.Errorf("datastore.NewClient() error: %w", err)
 	}
 
-	kinds, err := GetKinds(ctx, p, name)
+	kinds, err := GetKinds(ctx, name)
 	if err != nil {
 		return xerrors.Errorf("GetKinds() error: %w", err)
 	}

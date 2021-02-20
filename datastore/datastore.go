@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/secondarykey/dem/config"
+	"golang.org/x/xerrors"
 )
 
 const (
@@ -12,9 +13,13 @@ const (
 	DatastoreDatasetEnv      = "DATASTORE_DATASET"
 )
 
-func setEnv(p *config.Project) {
+func setEnvironment() (string, error) {
+	p := config.GetCurrentProject()
+	if p == nil {
+		return "", xerrors.Errorf("Current Project empty.")
+	}
 	os.Setenv(DatastoreEmulatorHostEnv, p.Endpoint)
 	os.Setenv(DatastoreProjectIDEnv, p.ProjectID)
 	os.Setenv(DatastoreDatasetEnv, p.ProjectID)
-	return
+	return p.ProjectID, nil
 }

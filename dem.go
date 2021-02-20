@@ -18,7 +18,11 @@ const (
 )
 
 func SetConsoleOptions(opts ...config.ConsoleOption) error {
-	return config.SetConsole(opts)
+	err := config.SetConsole(opts)
+	if err != nil {
+		return xerrors.Errorf("config.SetConsole() error: %w", err)
+	}
+	return nil
 }
 
 func Listen(opts ...config.ViewerOption) error {
@@ -47,9 +51,8 @@ func Listen(opts ...config.ViewerOption) error {
 
 func getKinds(names ...string) ([]*datastore.Kind, error) {
 
-	p := createProject()
 	ctx := context.Background()
-	kinds, err := datastore.GetKinds(ctx, p, names...)
+	kinds, err := datastore.GetKinds(ctx, names...)
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.GetKinds() error: %w", err)
 	}
@@ -63,10 +66,9 @@ func RemoveEntity(names ...string) error {
 		return xerrors.Errorf("getKinds() error: %w", err)
 	}
 
-	p := createProject()
 	ctx := context.Background()
 	for _, kind := range kinds {
-		err := datastore.RemoveKind(ctx, p, kind.Name)
+		err := datastore.RemoveKind(ctx, kind.Name)
 		if err != nil {
 			return xerrors.Errorf("datastore.RemoveAllKind() error: %w", err)
 		}
@@ -96,9 +98,8 @@ func ViewEntity(names ...string) error {
 		return xerrors.Errorf("getKinds() error: %w", err)
 	}
 
-	p := createProject()
 	for _, kind := range kinds {
-		entities, err := datastore.GetEntities(context.Background(), p, kind.Name)
+		entities, err := datastore.GetEntities(context.Background(), kind.Name)
 		if err != nil {
 			return xerrors.Errorf("GetEntities() error: %w", err)
 		}
@@ -110,10 +111,4 @@ func ViewEntity(names ...string) error {
 	}
 
 	return nil
-}
-
-func createProject() *config.Project {
-	conf := config.GetConsole()
-	p := config.NewProject(fmt.Sprintf("%s:%d", conf.Host, conf.Port), conf.ProjectID)
-	return p
 }

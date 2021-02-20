@@ -4,18 +4,20 @@ import (
 	"context"
 
 	"cloud.google.com/go/datastore"
-	"github.com/secondarykey/dem/config"
 	"golang.org/x/xerrors"
 )
 
 type Namespace string
 
-func getNamespaces(ctx context.Context, p *config.Project) ([]*Namespace, error) {
+func getNamespaces(ctx context.Context) ([]*Namespace, error) {
 
-	setEnv(p)
+	id, err := setEnvironment()
+	if err != nil {
+		return nil, xerrors.Errorf("setEnvironment() error: %w", err)
+	}
 
 	//namespace 指定の場合
-	cli, err := datastore.NewClient(ctx, p.ProjectID)
+	cli, err := datastore.NewClient(ctx, id)
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.NewClient() error: %w", err)
 	}

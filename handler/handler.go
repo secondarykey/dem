@@ -3,9 +3,7 @@ package handler
 import (
 	"context"
 	"embed"
-	"encoding/json"
 	"fmt"
-	"html/template"
 	"io/fs"
 	"log"
 	"net/http"
@@ -40,19 +38,29 @@ func Register() error {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/view/dark/{val}", changeDarkModeHandler)
+
 	r.HandleFunc("/project/delete.json", deleteProjectHandler)
 	r.HandleFunc("/project/add.json", registerProjectHandler)
 
 	r.HandleFunc("/namespace/change", namespaceHandler)
 
+	r.HandleFunc("/kind/view/{kind}/{cursor}", viewKindHandler)
+	r.HandleFunc("/entity/remove/{kind}", removeEntityHandler)
+
 	r.HandleFunc("/{id}/", viewProjectHandler)
-	r.HandleFunc("/{id}/{kind}/", viewKindHandler)
-	r.HandleFunc("/{id}/{kind}/remove", removeEntityHandler)
 
 	r.HandleFunc("/", indexHandler)
 
 	http.Handle("/", r)
 	return nil
+}
+
+type IndexDto struct {
+	Projects []*config.Project
+	Kinds    []*datastore.Kind
+	Title    string
+	ID       string
+	DarkMode bool
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -62,13 +70,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	dto := struct {
-		Projects []*config.Project
-		Kinds    []*datastore.Kind
-		Title    string
-		ID       string
-		DarkMode bool
-	}{projects, nil, "Select Project", "empty", config.GetDarkMode()}
+	dto := IndexDto{projects, nil, "Select Project", "empty", config.GetDarkMode()}
 
 	err = viewMain(w, dto)
 	if err != nil {
@@ -99,7 +101,7 @@ func viewProjectHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["id"]
-	p := config.GetProject(id)
+	p := config.SwitchProject(id)
 	if p == nil {
 		log.Println("NotFound")
 		return
@@ -111,61 +113,17 @@ func viewProjectHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	kinds, err := datastore.GetKinds(context.Background(), p)
+	kinds, err := datastore.GetKinds(context.Background())
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	dto := struct {
-		Projects []*config.Project
-		Kinds    []*datastore.Kind
-		Title    string
-		ID       string
-		DarkMode bool
-	}{projects, kinds, fmt.Sprintf("%s[%s]", p.Endpoint, p.ProjectID), p.ID, config.GetDarkMode()}
+	dto := IndexDto{projects, kinds, fmt.Sprintf("%s[%s]", p.Endpoint, p.ProjectID), p.ID, config.GetDarkMode()}
 
 	//現在の設定でKindを取得
 	err = viewMain(w, dto)
 	if err != nil {
 		log.Println(err)
 	}
-}
-
-func viewMain(w http.ResponseWriter, dto interface{}) error {
-	return view(w, dto, "layout.tmpl")
-}
-
-func view(w http.ResponseWriter, dto interface{}, files ...string) error {
-
-	funcMap := template.FuncMap{
-		//"add": func(a, b int) int { return a + b },
-	}
-
-	root := template.New("layout.tmpl").Funcs(funcMap)
-
-	tmpl, err := root.ParseFS(templates, files...)
-	if err != nil {
-		return xerrors.Errorf("template.ParseFS() error: %w", err)
-	}
-
-	err = tmpl.Execute(w, dto)
-	if err != nil {
-		return xerrors.Errorf("template.Execute() error: %w", err)
-	}
-	return nil
-}
-
-func viewJSON(w http.ResponseWriter, dto interface{}) error {
-	w.Header().Set("content-type", "application/json")
-	res, err := json.Marshal(dto)
-	if err != nil {
-		return xerrors.Errorf("json.Marshal() error: %w", err)
-	}
-
-	_, err = w.Write(res)
-	if err != nil {
-		return xerrors.Errorf("writer.Write() error: %w", err)
-	}
-	return nil
 }

@@ -42,17 +42,15 @@ func registerProjectHandler(w http.ResponseWriter, r *http.Request) {
 func viewKindHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-	id := vars["id"]
 	kind := vars["kind"]
 
-	p := config.GetProject(id)
-	kinds, err := datastore.GetKinds(r.Context(), p, kind)
+	kinds, err := datastore.GetKinds(r.Context(), kind)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	entities, err := datastore.GetEntities(r.Context(), p, kind)
+	entities, err := datastore.GetEntities(r.Context(), kind)
 	if err != nil {
 		log.Println(err)
 		return
@@ -87,7 +85,7 @@ func transformData(kind *datastore.Kind, entities []*datastore.Entity) ([]string
 		kv := ""
 		if kind.KeyType == datastore.StringKeyType {
 			datum.Key = key.Name
-			kv = shortData(key.Name)
+			kv = cutData(key.Name)
 		} else {
 			datum.Key = fmt.Sprintf("%d", key.ID)
 			kv = datum.Key
@@ -101,7 +99,7 @@ func transformData(kind *datastore.Kind, entities []*datastore.Entity) ([]string
 			if !ok {
 				v = "Mismatch," + prop.Name
 			}
-			vals[jdx+1] = shortData(v)
+			vals[jdx+1] = cutData(v)
 		}
 
 		datum.Values = vals
@@ -111,12 +109,23 @@ func transformData(kind *datastore.Kind, entities []*datastore.Entity) ([]string
 	return props, data
 }
 
-func shortData(v interface{}) string {
-	str := fmt.Sprintf("%v", v)
-	if len(str) > 21 {
-		str = str[0:21] + "..."
+func cutData(v interface{}) string {
+
+	switch val := v.(type) {
+	case string:
+		r := []rune(val)
+		if len(r) > 15 {
+			return string(r[0:13]) + "..."
+		}
+		return val
+	default:
+		str := fmt.Sprintf("%v", v)
+		if len(str) > 21 {
+			str = str[0:21] + "..."
+		}
+		return str
 	}
-	return str
+	return ""
 }
 
 type Entity struct {
