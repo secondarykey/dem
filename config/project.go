@@ -2,8 +2,6 @@ package config
 
 import "github.com/google/uuid"
 
-var currentProject *Project
-
 type Project struct {
 	ID        string
 	ProjectID string
@@ -19,17 +17,22 @@ func NewProject(endpoint string, projectid string) *Project {
 }
 
 func GetProjects() ([]*Project, error) {
-	return currentSetting.Projects, nil
+	return getCurrentSetting().Projects, nil
 }
 
 func GetCurrentProject() *Project {
-	return currentProject
+	return getProject(current.ID)
 }
 
 func SwitchProject(id string) *Project {
-	for _, p := range currentSetting.Projects {
+	p := getProject(id)
+	GetCurrent().ID = id
+	return p
+}
+
+func getProject(id string) *Project {
+	for _, p := range getCurrentSetting().Projects {
 		if p.ID == id {
-			currentProject = p
 			return p
 		}
 	}

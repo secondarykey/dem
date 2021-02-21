@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/secondarykey/dem/config"
 	"github.com/secondarykey/dem/datastore"
 )
@@ -14,6 +12,8 @@ import (
 func removeEntityHandler(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
+
+	c := createCurrent(r)
 
 	buf := r.FormValue("ids")
 	var ids []string
@@ -24,10 +24,7 @@ func removeEntityHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	kind := vars["kind"]
-
-	err = datastore.RemoveEntity(r.Context(), kind, ids)
+	err = datastore.RemoveEntity(r.Context(), c.Kind, ids)
 	if err != nil {
 		log.Println(err)
 		return
@@ -44,22 +41,16 @@ func removeEntityHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func changeLimitHandler(w http.ResponseWriter, r *http.Request) {
+func changeCurrentHandler(w http.ResponseWriter, r *http.Request) {
 
-	vars := mux.Vars(r)
-	limit := vars["limit"]
-	v, err := strconv.Atoi(limit)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	e := createCurrent(r)
+	config.SetCurrent(e)
 
-	config.SetLimit(v)
 	dto := struct {
 		Success bool
 	}{true}
 
-	err = viewJSON(w, dto)
+	err := viewJSON(w, dto)
 	if err != nil {
 		log.Println(err)
 	}

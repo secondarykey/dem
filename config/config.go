@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	DefaultLimit     = 20
 	DefaultNamespace = "[default]"
 )
 
@@ -16,12 +17,11 @@ func init() {
 	console.Host = "localhost"
 	console.ProjectID = "default"
 	console.Namespace = DefaultNamespace
-	console.Limit = 20
+	console.Limit = DefaultLimit
 
 	viewer := ViewerConfig{}
 	viewer.Port = 8088
 	viewer.ConfigFile = "$HOME/.dem.gob"
-	viewer.Limit = 20
 
 	gViewer = &viewer
 	gConsole = &console
@@ -38,7 +38,6 @@ type ConsoleConfig struct {
 type ViewerConfig struct {
 	Port       int
 	ConfigFile string
-	Limit      int
 }
 
 var (
@@ -73,23 +72,21 @@ func SetConsole(opts []ConsoleOption) error {
 		}
 	}
 
-	currentSetting = NewSetting()
-	currentProject = NewProject(fmt.Sprintf("%s:%d", gConsole.Host, gConsole.Port), gConsole.ProjectID)
-	currentSetting.limit = gConsole.Limit
+	currentSetting = newSetting()
+	p := NewProject(fmt.Sprintf("%s:%d", gConsole.Host, gConsole.Port), gConsole.ProjectID)
+	currentSetting.AddProject(p)
 
 	return nil
 }
 
 func LoadSetting() error {
-	currentSetting = NewSetting()
+	currentSetting = newSetting()
 	conf := GetViewer()
 
 	err := currentSetting.read(conf.ConfigFile)
 	if err != nil {
 		return xerrors.Errorf("Setting Read() error: %w", err)
 	}
-
-	currentSetting.limit = conf.Limit
 
 	return nil
 }
@@ -117,28 +114,4 @@ func SetDarkMode(v bool) error {
 		return xerrors.Errorf("Setting write() error: %w", err)
 	}
 	return nil
-}
-
-func SetLimit(v int) {
-	currentSetting.limit = v
-}
-
-func GetLimit() int {
-	return currentSetting.limit
-}
-
-func SetCursor(v string) {
-	currentSetting.cursor = v
-}
-
-func GetCursor() string {
-	return currentSetting.cursor
-}
-
-func SetNamespace(v string) {
-	currentSetting.namespace = v
-}
-
-func GetNamespace() string {
-	return currentSetting.namespace
 }

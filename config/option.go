@@ -75,7 +75,7 @@ func SetProjectID(p string) ConsoleOption {
 	}
 }
 
-func SetConsoleNamespace(n string) ConsoleOption {
+func SetNamespace(n string) ConsoleOption {
 	return func(c *ConsoleConfig) error {
 		c.Namespace = n
 		return nil

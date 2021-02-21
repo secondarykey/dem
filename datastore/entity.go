@@ -61,7 +61,7 @@ func (e *Entity) String() string {
 	return b.String()
 }
 
-func GetEntities(ctx context.Context, name string, cur string) ([]*Entity, string, error) {
+func GetEntities(ctx context.Context, name string, limit int, cur string, ns string) ([]*Entity, string, error) {
 
 	id, err := setEnvironment()
 	if err != nil {
@@ -74,12 +74,10 @@ func GetEntities(ctx context.Context, name string, cur string) ([]*Entity, strin
 	}
 
 	q := datastore.NewQuery(name)
-	limit := config.GetLimit()
 	if limit > 0 {
 		q = q.Limit(limit)
 	}
 
-	ns := config.GetNamespace()
 	if ns != config.DefaultNamespace {
 		q = q.Namespace(ns)
 	}
@@ -92,7 +90,11 @@ func GetEntities(ctx context.Context, name string, cur string) ([]*Entity, strin
 		q = q.Start(c)
 	}
 
-	dst := make([]*Entity, 0, limit)
+	capSz := limit
+	if limit < 0 {
+		capSz = 200
+	}
+	dst := make([]*Entity, 0, capSz)
 
 	t := cli.Run(ctx, q)
 	for {
@@ -105,7 +107,6 @@ func GetEntities(ctx context.Context, name string, cur string) ([]*Entity, strin
 			return nil, "", xerrors.Errorf("entities Next() error: %w", err)
 		}
 
-		fmt.Println(x.String())
 		dst = append(dst, &x)
 	}
 

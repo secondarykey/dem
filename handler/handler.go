@@ -24,10 +24,8 @@ type IndexDto struct {
 	Kinds      []*datastore.Kind
 	Namespaces []string
 	Title      string
-	ID         string
 	DarkMode   bool
-	Limit      int
-	Namespace  string
+	Current    config.Embed
 }
 
 func init() {
@@ -52,11 +50,11 @@ func Register() error {
 	r.HandleFunc("/project/delete.json", deleteProjectHandler)
 	r.HandleFunc("/project/add.json", registerProjectHandler)
 
-	r.HandleFunc("/namespace/{ns}", namespaceHandler)
+	r.HandleFunc("/namespace/change", changeCurrentHandler)
+	r.HandleFunc("/entity/limit/change", changeCurrentHandler)
 
-	r.HandleFunc("/entity/view/{kind}", viewKindHandler)
-	r.HandleFunc("/entity/limit/{limit}", changeLimitHandler)
-	r.HandleFunc("/entity/remove/{kind}", removeEntityHandler)
+	r.HandleFunc("/entity/view", viewKindHandler)
+	r.HandleFunc("/entity/remove", removeEntityHandler)
 
 	r.HandleFunc("/{id}/", viewProjectHandler)
 
@@ -68,6 +66,13 @@ func Register() error {
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 
+	current := config.Embed{}
+	current.ID = ""
+	current.Kind = ""
+	current.Limit = config.DefaultLimit
+	current.Namespace = config.DefaultNamespace
+	config.SetCurrent(&current)
+
 	projects, err := config.GetProjects()
 	if err != nil {
 		log.Println(err)
@@ -77,14 +82,12 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	dto := IndexDto{}
 	dto.Projects = projects
 	dto.Kinds = nil
-	dto.Title = "Select Project"
-	dto.ID = "empty"
-	dto.DarkMode = config.GetDarkMode()
-	dto.Limit = config.GetLimit()
-
 	nss := []string{config.DefaultNamespace}
 	dto.Namespaces = nss
-	dto.Namespace = config.DefaultNamespace
+	dto.Title = "Select Project"
+	dto.DarkMode = config.GetDarkMode()
+
+	dto.Current = current
 
 	err = viewMain(w, dto)
 	if err != nil {
@@ -115,6 +118,14 @@ func viewProjectHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["id"]
+
+	current := config.Embed{}
+	current.ID = id
+	current.Limit = config.DefaultLimit
+	current.Namespace = config.DefaultNamespace
+	current.Kind = ""
+	config.SetCurrent(&current)
+
 	p := config.SwitchProject(id)
 	if p == nil {
 		log.Println("NotFound")
@@ -143,14 +154,11 @@ func viewProjectHandler(w http.ResponseWriter, r *http.Request) {
 	dto := IndexDto{}
 	dto.Projects = projects
 	dto.Kinds = kinds
-	dto.Title = fmt.Sprintf("%s[%s]", p.Endpoint, p.ProjectID)
-	dto.ID = p.ID
-	dto.DarkMode = config.GetDarkMode()
-	dto.Limit = config.GetLimit()
 	dto.Namespaces = nss
-	dto.Namespace = config.DefaultNamespace
+	dto.Title = fmt.Sprintf("%s[%s]", p.Endpoint, p.ProjectID)
+	dto.DarkMode = config.GetDarkMode()
 
-	config.SetNamespace(dto.Namespace)
+	dto.Current = current
 
 	//現在の設定でKindを取得
 	err = viewMain(w, dto)

@@ -8,18 +8,22 @@ import (
 )
 
 var currentSetting *Setting
+var current *Embed
 
 type Setting struct {
 	DarkMode bool
 	Projects []*Project
-
-	//not gob
-	cursor    string
-	limit     int
-	namespace string
 }
 
-func NewSetting() *Setting {
+func getCurrentSetting() *Setting {
+	if currentSetting == nil {
+		currentSetting = newSetting()
+		currentSetting.read(gViewer.ConfigFile)
+	}
+	return currentSetting
+}
+
+func newSetting() *Setting {
 	s := Setting{}
 	s.Projects = make([]*Project, 0)
 	return &s
@@ -76,4 +80,19 @@ func (s *Setting) write(name string) error {
 	}
 
 	return nil
+}
+
+type Embed struct {
+	ID        string
+	Kind      string
+	Limit     int
+	Namespace string
+}
+
+func SetCurrent(e *Embed) {
+	current = e
+}
+
+func GetCurrent() *Embed {
+	return current
 }

@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/secondarykey/dem/config"
 	"github.com/secondarykey/dem/datastore"
 )
@@ -42,31 +41,27 @@ func registerProjectHandler(w http.ResponseWriter, r *http.Request) {
 
 func viewKindHandler(w http.ResponseWriter, r *http.Request) {
 
-	r.ParseForm()
-	v := r.FormValue("first")
+	e := createCurrent(r)
+	config.SetCurrent(e)
 
-	cursor := config.GetCursor()
+	cursor := r.FormValue("cursor")
+	v := r.FormValue("first")
 	first, err := strconv.ParseBool(v)
 	if err != nil || first {
 		cursor = ""
-		config.SetCursor(cursor)
 	}
 
-	vars := mux.Vars(r)
-	kind := vars["kind"]
-
-	kinds, err := datastore.GetKinds(r.Context(), kind)
+	kinds, err := datastore.GetKinds(r.Context(), e.Kind)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	entities, cur, err := datastore.GetEntities(r.Context(), kind, cursor)
+	entities, cur, err := datastore.GetEntities(r.Context(), e.Kind, e.Limit, cursor, e.Namespace)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	config.SetCursor(cur)
 
 	props, values := transformData(kinds[0], entities)
 
@@ -74,7 +69,8 @@ func viewKindHandler(w http.ResponseWriter, r *http.Request) {
 		Success bool
 		Header  []string
 		Data    []*Entity
-	}{true, props, values}
+		Next    string
+	}{true, props, values, cur}
 
 	err = viewJSON(w, dto)
 	if err != nil {

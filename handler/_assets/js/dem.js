@@ -1,5 +1,4 @@
-var currentKind = "";
-var projectID = document.querySelector('#settingID').value;
+var cursor = "";
 
 document.addEventListener("DOMContentLoaded", function() {
 
@@ -14,24 +13,14 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   dialog.querySelector('.entry').addEventListener('click', function() {
-
+    var params = new Object();
     var projectid = document.querySelector('#projectID').value;
     var endpoint = document.querySelector('#endpoint').value;
-
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST',"/project/add.json");
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.responseType = 'json';
-    xhr.onload = function() {
-      var resp = xhr.response;
-        if (resp.Success) {
-          location.href = resp.Redirect
-        } else {
-          alert(resp.Message);
-          dialog.close();
-        }
-    };
-    xhr.send("projectid=" + projectid + "&endpoint=" + endpoint);
+    params.projectid = projectid;
+    params.endpoint = endpoint;
+    request("/project/add.json",params,function(resp) {
+      location.href = resp.Redirect
+    });
   });
 
   dialog.querySelector('.close').addEventListener('click', function() {
@@ -43,33 +32,33 @@ document.addEventListener("DOMContentLoaded", function() {
 
   lists.forEach(function(value) {
     value.addEventListener('click', function(e) {
-      currentKind = e.target.getAttribute("data-name");
-      view(currentKind,true);
+      setCurrent("kind",e.target.getAttribute("data-name"));
+      view(true);
     });
   });
 
-  function view(kind,first) {
+  function view(first) {
+
+    if ( getCurrent("kind") == "" ) {
+      return "";
+    }
 
     if ( first ) {
+      cursor = "";
       var th = document.getElementById('table-header');
       th.innerHTML = "";
       var td = document.getElementById('table-body');
       td.innerHTML = "";
     }
 
-    var xhr = new XMLHttpRequest();
-    var url = "/entity/view/" + kind;
+    var url = "/entity/view";
+    var params = new Object();
+    params.first = first;
+    params.cursor = cursor;
 
-    xhr.open('POST',url);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.responseType = 'json';
+    request(url,params,function(resp) {
 
-    xhr.onload = function() {
-      var resp = xhr.response;
-      if (!resp.Success) {
-        alert(resp.Message);
-        return;
-      }
+      cursor = resp.Next;
 
       if ( first ) {
         createHeader(resp.Header);
@@ -82,8 +71,7 @@ document.addEventListener("DOMContentLoaded", function() {
       componentHandler.upgradeElement(table,'MaterialDataTable');
 
       clearCheck();
-    };
-    xhr.send("first=" + first);
+    });
   }
 
   function createCheckboxLabel(id) {
@@ -192,7 +180,7 @@ document.addEventListener("DOMContentLoaded", function() {
       tr.id = "nextUpdate";
       tr.addEventListener("click",function(e) {
         tr.parentElement.removeChild(tr);
-        view(currentKind,false);
+        view(false);
       });
 
       var td = document.createElement("td");
@@ -231,46 +219,26 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     } 
 
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST',"/entity/remove/" + currentKind);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.responseType = 'json';
-    xhr.onload = function() {
-      var resp = xhr.response;
-        if (resp.Success) {
-          for (var i = 0, length = rows.length; i < length; i++) {
-            var row = rows[i];
-            row.parentNode.removeChild(row);
-          }
-        } else {
-          alert(resp.Message);
-        }
-    };
-    xhr.send("ids=" + JSON.stringify(ids));
+    var params = new Object();
+    params.ids = JSON.stringify(ids);
+    request("/entity/remove",params,function(resp) {
+      for (var i = 0, length = rows.length; i < length; i++) {
+        var row = rows[i];
+        row.parentNode.removeChild(row);
+      }
+    });
   }
 
   var list = document.querySelectorAll('.limit-list');
   for ( var i = 0; i < list.length; ++i ) {
     list[i].addEventListener("click",function(e) {
+
       var limit = e.target.textContent;
       document.getElementById("limit-text").textContent = limit;
-
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST',"/entity/limit/" + limit);
-      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-      xhr.responseType = 'json';
-
-      xhr.onload = function() {
-        var resp = xhr.response;
-          if (resp.Success) {
-            if ( currentKind != "" ) {
-              view(currentKind,true);
-            }
-          } else {
-            alert(resp.Message);
-          }
-      };
-      xhr.send();
+      setCurrent("limit",limit)
+      request("/entity/limit/change",new Object(),function(resp) {
+        view(true);
+      });
     });
   }
 
@@ -279,23 +247,10 @@ document.addEventListener("DOMContentLoaded", function() {
     list[i].addEventListener("click",function(e) {
       var ns = e.target.textContent;
       document.getElementById("ns-text").textContent = ns;
-
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST',"/namespace/" + ns);
-      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-      xhr.responseType = 'json';
-
-      xhr.onload = function() {
-        var resp = xhr.response;
-          if (resp.Success) {
-            if ( currentKind != "" ) {
-              view(currentKind,true);
-            }
-          } else {
-            alert(resp.Message);
-          }
-      };
-      xhr.send();
+      setCurrent("namespace",ns);
+      request("/namespace/change",new Object(),function(resp) { 
+        view(true);
+      });
     });
   }
 
@@ -319,4 +274,51 @@ layout.addEventListener("mdl-componentupgraded",function(e) {
   }
 });
 
+function request(url,params,successFunc) {
+
+  var xhr = new XMLHttpRequest();
+
+  xhr.open('POST',url);
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.responseType = 'json';
+
+  xhr.onload = function() {
+    var resp = xhr.response;
+    if ( resp.Success ) {
+      successFunc(resp);
+    } else {
+      //Error
+      Alert(resp.Message);
+    }
+  };
+
+  //xhr.onerror = function() {
+  //};
+  params["ID"]        = document.getElementById("ID").value;
+  params["kind"]      = document.getElementById("kind").value;
+  params["limit"]     = document.getElementById("limit").value;
+  params["namespace"] = document.getElementById("namespace").value;
+
+  xhr.send(parsePostValue(params));
+  return;
+}
+
+function setCurrent(id,value) {
+  document.getElementById(id).value = value;
+}
+
+function getCurrent(id) {
+  return document.getElementById(id).value;
+}
+
+function parsePostValue(params) {
+  var value = "";
+  Object.keys(params).forEach(function (k) {
+    if ( value != "" ) {
+      value += "&"
+    }
+    value += k + "=" + params[k];
+  });
+  return value;
+}
 
