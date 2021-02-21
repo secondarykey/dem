@@ -153,25 +153,37 @@
 
       </main>
 
-      <dialog id="ProjectDialog" class="mdl-dialog">
-        <h4 class="mdl-dialog__title">New Project</h4>
-        <div class="mdl-dialog__content mdl-grid">
-          <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--12-col">
-            <input class="mdl-textfield__input" type="text" id="endpoint">
-            <label class="mdl-textfield__label" for="endpoint">e.g) localhost:8081</label>
-          </div>
-          <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--12-col">
-            <input class="mdl-textfield__input" type="text" id="projectID">
-            <label class="mdl-textfield__label" for="projectID">datastore project id</label>
-          </div>
-        </div>
 
-        <div class="mdl-dialog__actions">
-          <button type="button" class="mdl-button entry">Entry</button>
-          <button type="button" class="mdl-button close">Close</button>
-        </div>
-      </dialog>
     </div>
+
+    <dialog id="ProjectDialog" class="mdl-dialog">
+      <h4 class="mdl-dialog__title">New Project</h4>
+      <div class="mdl-dialog__content mdl-grid">
+        <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--12-col">
+          <input class="mdl-textfield__input" type="text" id="endpoint">
+          <label class="mdl-textfield__label" for="endpoint">e.g) localhost:8081</label>
+        </div>
+        <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--12-col">
+          <input class="mdl-textfield__input" type="text" id="projectID">
+          <label class="mdl-textfield__label" for="projectID">datastore project id</label>
+        </div>
+      </div>
+
+      <div class="mdl-dialog__actions">
+        <button type="button" class="mdl-button entry">Entry</button>
+        <button type="button" class="mdl-button close">Close</button>
+      </div>
+    </dialog>
+
+    <dialog id="ConfirmDialog" class="mdl-dialog">
+      <h4 class="mdl-dialog__title" id="confirmTitle"></h4>
+      <div id="confirmMessage"></div>
+      <div class="mdl-dialog__actions">
+        <button type="button" class="mdl-button yes">Yes</button>
+        <button type="button" class="mdl-button no">No</button>
+      </div>
+    </dialog>
+
 
     <button id="viewBtnNE" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored view-btn" disabled>
       VIEW 

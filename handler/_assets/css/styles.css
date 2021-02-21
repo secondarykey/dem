@@ -187,3 +187,12 @@ html, body {
 .ns-list {
   font-size:18px;
 }
+
+#confirmTitle {
+  font-size:20px;
+}
+
+#confirmMessage {
+  padding:20px !important;
+  font-size:20px;
+}

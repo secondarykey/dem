@@ -195,7 +195,9 @@ document.addEventListener("DOMContentLoaded", function() {
   var delBtns = document.querySelectorAll('.remove-btn')
   for ( var i = 0; i < delBtns.length; i++ )  {     
     delBtns[i].addEventListener('click', function(e) {
+      confirmDem("Delete?","Do you want to delete the selected data?",function() {
         deleteRows(delBtns);
+      });
     });
   }
 
@@ -321,4 +323,62 @@ function parsePostValue(params) {
   });
   return value;
 }
+
+var handler = (function(){
+    var events = {},
+    key = 0;
+    return {
+        add: function(target, type, listener, capture) {
+            target.addEventListener(type, listener, capture);
+            events[key] = {
+                target: target,
+                type: type,
+                listener: listener,
+                capture: capture
+            };
+            return key++;
+        },
+        remove: function(key) {
+            if(key in events) {
+                var e = events[key];
+                e.target.removeEventListener(e.type, e.listener, e.capture);
+            }
+        }
+    };
+}());
+
+function confirmDem(title,msg,yesFunc) {
+  var dialog = document.querySelector('#ConfirmDialog');
+  if (!dialog.showModal) {
+    dialogPolyfill.registerDialog(dialog);
+  }
+
+  var titleElm = dialog.querySelector('#confirmTitle');
+  var msgElm = dialog.querySelector('#confirmMessage');
+  titleElm.textContent = title;
+  msgElm.textContent = msg;
+
+  var yes = dialog.querySelector('.yes');
+  var no = dialog.querySelector('.no');
+  dialog.hide = function() {
+    dialog.close();
+    handler.remove(dialog.yes);
+    handler.remove(dialog.no);
+  }
+
+  var yesKey = handler.add(yes,"click",function() {
+    yesFunc();
+    dialog.hide();
+  });
+
+  var noKey = handler.add(no,"click",function() {
+    dialog.hide();
+  });
+
+  dialog.yes = yesKey;
+  dialog.no = noKey;
+
+  dialog.showModal();
+}
+
 
