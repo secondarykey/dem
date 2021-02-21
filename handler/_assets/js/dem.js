@@ -1,5 +1,4 @@
 var currentKind = "";
-var currentCursor = "start";
 var projectID = document.querySelector('#settingID').value;
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -45,14 +44,13 @@ document.addEventListener("DOMContentLoaded", function() {
   lists.forEach(function(value) {
     value.addEventListener('click', function(e) {
       currentKind = e.target.getAttribute("data-name");
-      currentCursor = "start";
-      view(currentKind,currentCursor);
+      view(currentKind,true);
     });
   });
 
-  function view(kind,cursor) {
+  function view(kind,first) {
 
-    if ( cursor == "start" ) {
+    if ( first ) {
       var th = document.getElementById('table-header');
       th.innerHTML = "";
       var td = document.getElementById('table-body');
@@ -60,21 +58,20 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     var xhr = new XMLHttpRequest();
-    var url = "/kind/view/" + kind + "/" + cursor;
+    var url = "/entity/view/" + kind;
 
     xhr.open('POST',url);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.responseType = 'json';
 
     xhr.onload = function() {
-
       var resp = xhr.response;
       if (!resp.Success) {
         alert(resp.Message);
         return;
       }
 
-      if ( cursor == "start" ) {
+      if ( first ) {
         createHeader(resp.Header);
         changeCheckAll();
       }
@@ -86,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
       clearCheck();
     };
-    xhr.send();
+    xhr.send("first=" + first);
   }
 
   function createCheckboxLabel(id) {
@@ -168,6 +165,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     var tb = document.getElementById('table-body');
 
+    var colLen = 0;
     for ( var i = 0; i < data.length; i++ ) {
 
       var row = data[i];
@@ -178,7 +176,8 @@ document.addEventListener("DOMContentLoaded", function() {
       td.appendChild(label);
       elm.appendChild(td);
 
-      for ( var j = 0; j < row.Values.length; j++ ) {
+      colLen = row.Values.length
+      for ( var j = 0; j < colLen; j++ ) {
         var td = document.createElement("td");
         td.classList.add("mdl-data-table__cell--non-numeric");
         var txt = document.createTextNode(row.Values[j]);
@@ -186,6 +185,22 @@ document.addEventListener("DOMContentLoaded", function() {
         elm.appendChild(td);
       }
       tb.appendChild(elm)
+    }
+
+    if ( colLen != 0 ) {
+      var tr = document.createElement("tr");
+      tr.id = "nextUpdate";
+      tr.addEventListener("click",function(e) {
+        tr.parentElement.removeChild(tr);
+        view(currentKind,false);
+      });
+
+      var td = document.createElement("td");
+      td.setAttribute("style","text-align:center;");
+      td.setAttribute("colspan",colLen + 1);
+      td.textContent = "Next";
+      tr.appendChild(td);
+      tb.appendChild(tr);
     }
   }
 
@@ -241,15 +256,40 @@ document.addEventListener("DOMContentLoaded", function() {
       document.getElementById("limit-text").textContent = limit;
 
       var xhr = new XMLHttpRequest();
-      xhr.open('POST',"/entity/limit/" + currentKind + "/" + limit);
+      xhr.open('POST',"/entity/limit/" + limit);
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
       xhr.responseType = 'json';
+
       xhr.onload = function() {
         var resp = xhr.response;
           if (resp.Success) {
             if ( currentKind != "" ) {
-              currentCursor = "start";
-              view(currentKind,currentCursor);
+              view(currentKind,true);
+            }
+          } else {
+            alert(resp.Message);
+          }
+      };
+      xhr.send();
+    });
+  }
+
+  var list = document.querySelectorAll('.ns-list');
+  for ( var i = 0; i < list.length; ++i ) {
+    list[i].addEventListener("click",function(e) {
+      var ns = e.target.textContent;
+      document.getElementById("ns-text").textContent = ns;
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST',"/entity/limit/" + ns);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.responseType = 'json';
+
+      xhr.onload = function() {
+        var resp = xhr.response;
+          if (resp.Success) {
+            if ( currentKind != "" ) {
+              view(currentKind,true);
             }
           } else {
             alert(resp.Message);

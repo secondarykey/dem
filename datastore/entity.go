@@ -7,7 +7,9 @@ import (
 	"strings"
 
 	"cloud.google.com/go/datastore"
+	"github.com/secondarykey/dem/config"
 	"golang.org/x/xerrors"
+	"google.golang.org/api/iterator"
 )
 
 type Entity struct {
@@ -45,7 +47,7 @@ func (e *Entity) Save() ([]datastore.Property, error) {
 func (e *Entity) String() string {
 	var b strings.Builder
 
-	b.WriteString(fmt.Sprintf("=== Key(%d)[%s]", e.Key.ID, e.Key.Name))
+	b.WriteString(fmt.Sprintf("=== Key(%d:%s)[%s]", e.Key.ID, e.Key.Namespace, e.Key.Name))
 
 	for key, elm := range e.Values {
 		line := fmt.Sprintf("%v", elm)
@@ -59,27 +61,60 @@ func (e *Entity) String() string {
 	return b.String()
 }
 
-func GetEntities(ctx context.Context, name string) ([]*Entity, error) {
+func GetEntities(ctx context.Context, name string, cur string) ([]*Entity, string, error) {
 
 	id, err := setEnvironment()
 	if err != nil {
-		return nil, xerrors.Errorf("setEnvironment() error:%w", err)
+		return nil, "", xerrors.Errorf("setEnvironment() error:%w", err)
 	}
 
 	cli, err := datastore.NewClient(ctx, id)
 	if err != nil {
-		return nil, xerrors.Errorf("datastore.NewClient() error: %w", err)
+		return nil, "", xerrors.Errorf("datastore.NewClient() error: %w", err)
 	}
 
 	q := datastore.NewQuery(name)
-
-	var dst []*Entity
-	_, err = cli.GetAll(ctx, q, &dst)
-	if err != nil {
-		return nil, xerrors.Errorf("GetAll() error: %w", err)
+	limit := config.GetLimit()
+	if limit > 0 {
+		q = q.Limit(limit)
 	}
 
-	return dst, nil
+	ns := config.GetNamespace()
+	if ns != "" {
+		q = q.Namespace(ns)
+	}
+
+	if cur != "" {
+		c, err := datastore.DecodeCursor(cur)
+		if err != nil {
+			return nil, "", xerrors.Errorf("datastore.DecodeCursor() error: %w", err)
+		}
+		q = q.Start(c)
+	}
+
+	dst := make([]*Entity, 0, limit)
+
+	t := cli.Run(ctx, q)
+	for {
+		var x Entity
+		_, err := t.Next(&x)
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, "", xerrors.Errorf("entities Next() error: %w", err)
+		}
+
+		fmt.Println(x.String())
+		dst = append(dst, &x)
+	}
+
+	next, err := t.Cursor()
+	if err != nil {
+		return nil, "", xerrors.Errorf("iterator Cursor() error:% w", err)
+	}
+
+	return dst, next.String(), nil
 }
 
 func RemoveEntity(ctx context.Context, name string, ids []string) error {

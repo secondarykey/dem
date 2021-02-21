@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"embed"
 	"fmt"
 	"io/fs"
@@ -21,17 +20,18 @@ var embTemplates embed.FS
 var templates fs.FS
 
 type IndexDto struct {
-	Projects  []*config.Project
-	Kinds     []*datastore.Kind
-	Title     string
-	ID        string
-	DarkMode  bool
-	Limit     int
-	Namespace string
+	Projects   []*config.Project
+	Kinds      []*datastore.Kind
+	Namespaces []string
+	Title      string
+	ID         string
+	DarkMode   bool
+	Limit      int
+	Namespace  string
 }
 
 const (
-	defaultNamespace = "[default]"
+	defaultNamespace = ""
 )
 
 func init() {
@@ -56,10 +56,10 @@ func Register() error {
 	r.HandleFunc("/project/delete.json", deleteProjectHandler)
 	r.HandleFunc("/project/add.json", registerProjectHandler)
 
-	r.HandleFunc("/namespace/change", namespaceHandler)
+	r.HandleFunc("/namespace/{ns}", namespaceHandler)
 
-	r.HandleFunc("/kind/view/{kind}/{cursor}", viewKindHandler)
-	r.HandleFunc("/entity/limit/{kind}/{limit}", changeLimitHandler)
+	r.HandleFunc("/entity/view/{kind}", viewKindHandler)
+	r.HandleFunc("/entity/limit/{limit}", changeLimitHandler)
 	r.HandleFunc("/entity/remove/{kind}", removeEntityHandler)
 
 	r.HandleFunc("/{id}/", viewProjectHandler)
@@ -75,6 +75,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	projects, err := config.GetProjects()
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
 	dto := IndexDto{}
@@ -84,6 +85,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	dto.ID = "empty"
 	dto.DarkMode = config.GetDarkMode()
 	dto.Limit = config.GetLimit()
+
+	nss := []string{defaultNamespace}
+	dto.Namespaces = nss
 	dto.Namespace = defaultNamespace
 
 	err = viewMain(w, dto)
@@ -127,7 +131,14 @@ func viewProjectHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	kinds, err := datastore.GetKinds(context.Background())
+	ctx := r.Context()
+	nss, err := datastore.GetNamespaces(ctx)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	kinds, err := datastore.GetKinds(ctx)
 	if err != nil {
 		log.Println(err)
 		return
@@ -140,6 +151,7 @@ func viewProjectHandler(w http.ResponseWriter, r *http.Request) {
 	dto.ID = p.ID
 	dto.DarkMode = config.GetDarkMode()
 	dto.Limit = config.GetLimit()
+	dto.Namespaces = nss
 	dto.Namespace = defaultNamespace
 
 	//現在の設定でKindを取得

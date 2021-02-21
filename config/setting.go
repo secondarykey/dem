@@ -13,7 +13,10 @@ type Setting struct {
 	DarkMode bool
 	Projects []*Project
 
-	limit int //not gob
+	//not gob
+	cursor    string
+	limit     int
+	namespace string
 }
 
 func NewSetting() *Setting {

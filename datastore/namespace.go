@@ -7,16 +7,13 @@ import (
 	"golang.org/x/xerrors"
 )
 
-type Namespace string
-
-func getNamespaces(ctx context.Context) ([]*Namespace, error) {
+func GetNamespaces(ctx context.Context) ([]string, error) {
 
 	id, err := setEnvironment()
 	if err != nil {
 		return nil, xerrors.Errorf("setEnvironment() error: %w", err)
 	}
 
-	//namespace 指定の場合
 	cli, err := datastore.NewClient(ctx, id)
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.NewClient() error: %w", err)
@@ -29,11 +26,10 @@ func getNamespaces(ctx context.Context) ([]*Namespace, error) {
 		return nil, xerrors.Errorf("Namespace GetAll() error: %w", err)
 	}
 
-	var rtn []*Namespace
+	var rtn []string
 	for _, key := range keys {
-		space := Namespace(key.Name)
-		rtn = append(rtn, &space)
+		space := key.Name
+		rtn = append(rtn, space)
 	}
-
 	return rtn, nil
 }

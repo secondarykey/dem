@@ -55,7 +55,6 @@ func changeLimitHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	config.SetLimit(v)
-
 	dto := struct {
 		Success bool
 	}{true}

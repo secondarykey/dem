@@ -95,7 +95,7 @@ func ViewEntity(names ...string) error {
 	}
 
 	for _, kind := range kinds {
-		entities, err := datastore.GetEntities(context.Background(), kind.Name)
+		entities, _, err := datastore.GetEntities(context.Background(), kind.Name, "")
 		if err != nil {
 			return xerrors.Errorf("GetEntities() error: %w", err)
 		}

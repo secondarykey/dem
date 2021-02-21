@@ -6,12 +6,16 @@ import (
 	"golang.org/x/xerrors"
 )
 
+const (
+	DefaultNamespace = "[default]"
+)
+
 func init() {
 	console := ConsoleConfig{}
 	console.Port = 8081
 	console.Host = "localhost"
 	console.ProjectID = "default"
-	console.Namespace = "[default]"
+	console.Namespace = DefaultNamespace
 	console.Limit = 20
 
 	viewer := ViewerConfig{}
@@ -121,4 +125,20 @@ func SetLimit(v int) {
 
 func GetLimit() int {
 	return currentSetting.limit
+}
+
+func SetCursor(v string) {
+	currentSetting.cursor = v
+}
+
+func GetCursor() string {
+	return currentSetting.cursor
+}
+
+func SetNamespace(v string) {
+	currentSetting.namespace = v
+}
+
+func GetNamespace() string {
+	return currentSetting.namespace
 }

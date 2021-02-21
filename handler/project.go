@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/secondarykey/dem/config"
@@ -41,6 +42,16 @@ func registerProjectHandler(w http.ResponseWriter, r *http.Request) {
 
 func viewKindHandler(w http.ResponseWriter, r *http.Request) {
 
+	r.ParseForm()
+	v := r.FormValue("first")
+
+	cursor := config.GetCursor()
+	first, err := strconv.ParseBool(v)
+	if err != nil || first {
+		cursor = ""
+		config.SetCursor(cursor)
+	}
+
 	vars := mux.Vars(r)
 	kind := vars["kind"]
 
@@ -50,11 +61,12 @@ func viewKindHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	entities, err := datastore.GetEntities(r.Context(), kind)
+	entities, cur, err := datastore.GetEntities(r.Context(), kind, cursor)
 	if err != nil {
 		log.Println(err)
 		return
 	}
+	config.SetCursor(cur)
 
 	props, values := transformData(kinds[0], entities)
 
