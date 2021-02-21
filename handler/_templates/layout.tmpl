@@ -132,12 +132,11 @@
                 <span class="visuallyhidden">Limit</span>
               </button>
               <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="limitBtn">
-                <li class="mdl-menu__item limit-list">1</li>
-                <li class="mdl-menu__item limit-list">10</li>
-                <li class="mdl-menu__item limit-list">20</li>
-                <li class="mdl-menu__item limit-list">50</li>
-                <li class="mdl-menu__item limit-list">100</li>
-                <li class="mdl-menu__item limit-list">-1</li>
+                <li class="mdl-menu__item limit-list" data-value="10">10</li>
+                <li class="mdl-menu__item limit-list" data-value="20">20</li>
+                <li class="mdl-menu__item limit-list" data-value="50">50</li>
+                <li class="mdl-menu__item limit-list" data-value="100">100</li>
+                <li class="mdl-menu__item limit-list" data-value="-1">None</li>
               </ul>
             </div>
 
@@ -162,7 +161,7 @@
 
     </div>
 
-    <dialog id="ProjectDialog" class="mdl-dialog">
+    <dialog id="projectDialog" class="mdl-dialog">
       <h4 class="mdl-dialog__title">New Project</h4>
       <div class="mdl-dialog__content mdl-grid">
         <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--12-col">
@@ -181,7 +180,7 @@
       </div>
     </dialog>
 
-    <dialog id="ConfirmDialog" class="mdl-dialog">
+    <dialog id="confirmDialog" class="mdl-dialog">
       <h4 class="mdl-dialog__title" id="confirmTitle"></h4>
       <div id="confirmMessage"></div>
       <div class="mdl-dialog__actions">
@@ -190,6 +189,13 @@
       </div>
     </dialog>
 
+    <dialog id="alertDialog" class="mdl-dialog">
+      <h4 class="mdl-dialog__title" id="alertTitle"></h4>
+      <div id="alertMessage"></div>
+      <div class="mdl-dialog__actions">
+        <button type="button" class="mdl-button ok">OK</button>
+      </div>
+    </dialog>
 
     <button id="viewBtnNE" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored view-btn" disabled>
       VIEW 

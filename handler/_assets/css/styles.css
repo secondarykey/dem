@@ -192,6 +192,14 @@ html, body {
   font-size:18px;
 }
 
+#confirmDialog {
+  width:500px;
+}
+
+#alertDialog {
+  width:500px;
+}
+
 #confirmTitle {
   font-size:20px;
 }
@@ -199,6 +207,16 @@ html, body {
 #confirmMessage {
   padding:20px !important;
   font-size:20px;
+}
+
+#alertTitle {
+  font-size:24px;
+}
+
+#alertMessage {
+  padding:20px !important;
+  font-size:14px;
+  white-space:pre-wrap;
 }
 
 .project-link {
@@ -210,5 +228,5 @@ html, body {
 
 i.remove-project {
   color:#dd6666 !important;
-}    
+} 
 

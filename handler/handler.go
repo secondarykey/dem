@@ -75,7 +75,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	projects, err := config.GetProjects()
 	if err != nil {
-		log.Println(err)
+		viewError(w, "Failed to get project", 500, err)
 		return
 	}
 
@@ -91,7 +91,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = viewMain(w, dto)
 	if err != nil {
-		log.Println(err)
+		viewError(w, "Failed to write html", 500, err)
 	}
 }
 
@@ -101,13 +101,13 @@ func changeDarkModeHandler(w http.ResponseWriter, r *http.Request) {
 
 	v, err := strconv.ParseBool(darkMode)
 	if err != nil {
-		log.Println(err)
+		viewError(w, "Failed to parse dark mode["+darkMode+"]", 500, err)
 		return
 	}
 
 	err = config.SetDarkMode(v)
 	if err != nil {
-		log.Println(err)
+		viewError(w, "Failed to set dark mode", 500, err)
 		return
 	}
 
@@ -128,26 +128,26 @@ func viewProjectHandler(w http.ResponseWriter, r *http.Request) {
 
 	p := config.SwitchProject(id)
 	if p == nil {
-		log.Println("NotFound")
+		viewError(w, "Failed to switch project", 500, fmt.Errorf("NotFound Project["+id+"]"))
 		return
 	}
 
 	projects, err := config.GetProjects()
 	if err != nil {
-		log.Println(err)
+		viewError(w, "Failed to get projects", 500, err)
 		return
 	}
 
 	ctx := r.Context()
 	nss, err := datastore.GetNamespaces(ctx)
 	if err != nil {
-		log.Println(err)
+		viewError(w, "Failed to get namespaces", 500, err)
 		return
 	}
 
 	kinds, err := datastore.GetKinds(ctx)
 	if err != nil {
-		log.Println(err)
+		viewError(w, "Failed to get kinds", 500, err)
 		return
 	}
 
@@ -163,6 +163,6 @@ func viewProjectHandler(w http.ResponseWriter, r *http.Request) {
 	//現在の設定でKindを取得
 	err = viewMain(w, dto)
 	if err != nil {
-		log.Println(err)
+		viewError(w, "Failed to write html", 500, err)
 	}
 }

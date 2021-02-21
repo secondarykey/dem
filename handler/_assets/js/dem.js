@@ -2,17 +2,15 @@ var cursor = "";
 
 document.addEventListener("DOMContentLoaded", function() {
 
-  var dialog = document.querySelector('#ProjectDialog');
-  var showDialogButton = document.querySelector('#registerProject');
+  var dialog = document.querySelector('#projectDialog');
   if (! dialog.showModal) {
     dialogPolyfill.registerDialog(dialog);
   }
 
-  showDialogButton.addEventListener('click', function() {
-    dialog.showModal();
-  });
+  var entry = dialog.querySelector('.entry');
+  var close = dialog.querySelector('.close');
 
-  dialog.querySelector('.entry').addEventListener('click', function() {
+  var entryKey = handler.add(entry,'click', function() {
     var params = new Object();
     var projectid = document.querySelector('#projectID').value;
     var endpoint = document.querySelector('#endpoint').value;
@@ -23,8 +21,13 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  dialog.querySelector('.close').addEventListener('click', function() {
+  var closeKey = handler.add(close,'click', function() {
     dialog.close();
+  });
+
+  var registerProject = document.querySelector('#registerProject');
+  registerProject.addEventListener('click', function() {
+    dialog.showModal();
   });
 
   var lists = document.querySelectorAll('.remove-project');
@@ -196,7 +199,12 @@ document.addEventListener("DOMContentLoaded", function() {
       var td = document.createElement("td");
       td.setAttribute("style","text-align:center;");
       td.setAttribute("colspan",colLen + 1);
-      td.textContent = "Next";
+
+      var icon = document.createElement("i");
+      icon.classList.add("material-icons");
+      icon.textContent = "next_plan";
+
+      td.appendChild(icon)
       tr.appendChild(td);
       tb.appendChild(tr);
     }
@@ -245,8 +253,9 @@ document.addEventListener("DOMContentLoaded", function() {
   for ( var i = 0; i < list.length; ++i ) {
     list[i].addEventListener("click",function(e) {
 
-      var limit = e.target.textContent;
-      document.getElementById("limit-text").textContent = limit;
+      var limit = e.target.getAttribute("data-value");
+      document.getElementById("limit-text").setAttribute("data-value",limit);
+      document.getElementById("limit-text").textContent = e.target.textContent;
       setCurrent("limit",limit)
       request("/entity/limit/change",new Object(),function(resp) {
         view(true);
@@ -268,7 +277,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function fitWindow() {
     var table = document.getElementById("view-table");
-    table.style.height = (window.innerHeight - 150) + "px";
+    table.style.height = (window.innerHeight - 140) + "px";
   }
   window.addEventListener('resize',function() {
       fitWindow();
@@ -309,12 +318,17 @@ function request(url,params,successFunc) {
       successFunc(resp);
     } else {
       //Error
-      Alert(resp.Message);
+      alertDem(resp.Message,resp.Detail,function() {
+      });
     }
   };
 
-  //xhr.onerror = function() {
-  //};
+  xhr.onerror = function() {
+    var resp = xhr.response;
+    alertDem(resp.Message,resp.Detail,function() {
+    });
+  };
+
   params["ID"]        = document.getElementById("ID").value;
   params["kind"]      = document.getElementById("kind").value;
   params["limit"]     = document.getElementById("limit").value;
@@ -366,8 +380,35 @@ var handler = (function(){
   };
 }());
 
+function alertDem(title,msg,okFunc) {
+  var dialog = document.querySelector('#alertDialog');
+  if (!dialog.showModal) {
+    dialogPolyfill.registerDialog(dialog);
+  }
+
+  var titleElm = dialog.querySelector('#alertTitle');
+  var msgElm = dialog.querySelector('#alertMessage');
+  titleElm.textContent = title;
+  msgElm.textContent = msg;
+
+  var ok = dialog.querySelector('.ok');
+  dialog.hide = function() {
+    dialog.close();
+    handler.remove(dialog.okKey);
+  }
+
+  var okKey = handler.add(ok,"click",function() {
+    okFunc();
+    dialog.hide();
+  });
+
+  dialog.okKey = okKey;
+  dialog.showModal();
+}
+
 function confirmDem(title,msg,yesFunc) {
-  var dialog = document.querySelector('#ConfirmDialog');
+
+  var dialog = document.querySelector('#confirmDialog');
   if (!dialog.showModal) {
     dialogPolyfill.registerDialog(dialog);
   }

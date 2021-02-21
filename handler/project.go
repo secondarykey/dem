@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -18,7 +17,7 @@ func deleteProjectHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := config.DeleteProject(id)
 	if err != nil {
-		log.Println(err)
+		viewError(w, "Faild to delete project.", 500, err)
 		return
 	}
 	http.Redirect(w, r, "/", 302)
@@ -34,7 +33,7 @@ func registerProjectHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := config.AddProject(pro)
 	if err != nil {
-		log.Println(err)
+		errorJSON(w, "Failed to add project", 500, err)
 		return
 	}
 
@@ -45,9 +44,8 @@ func registerProjectHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = viewJSON(w, dto)
 	if err != nil {
-		log.Println(err)
+		errorJSON(w, "Failed to view json", 500, err)
 	}
-
 }
 
 func viewKindHandler(w http.ResponseWriter, r *http.Request) {
@@ -64,13 +62,13 @@ func viewKindHandler(w http.ResponseWriter, r *http.Request) {
 
 	kinds, err := datastore.GetKinds(r.Context(), e.Kind)
 	if err != nil {
-		log.Println(err)
+		errorJSON(w, "Failed to get Kind["+e.Kind+"]", 500, err)
 		return
 	}
 
 	entities, cur, err := datastore.GetEntities(r.Context(), e.Kind, e.Limit, cursor, e.Namespace)
 	if err != nil {
-		log.Println(err)
+		errorJSON(w, "Failed to select entity", 500, err)
 		return
 	}
 
@@ -85,7 +83,7 @@ func viewKindHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = viewJSON(w, dto)
 	if err != nil {
-		log.Println(err)
+		errorJSON(w, "Failed to view json", 500, err)
 	}
 }
 

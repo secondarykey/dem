@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/secondarykey/dem/config"
@@ -20,13 +19,13 @@ func removeEntityHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := json.Unmarshal([]byte(buf), &ids)
 	if err != nil {
-		log.Println(err)
+		errorJSON(w, "Failed to unmarshal json", 500, err)
 		return
 	}
 
 	err = datastore.RemoveEntity(r.Context(), c.Kind, ids)
 	if err != nil {
-		log.Println(err)
+		errorJSON(w, "Failed to remove entities", 500, err)
 		return
 	}
 
@@ -36,9 +35,8 @@ func removeEntityHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = viewJSON(w, dto)
 	if err != nil {
-		log.Println(err)
+		errorJSON(w, "Failed to write json", 500, err)
 	}
-
 }
 
 func changeCurrentHandler(w http.ResponseWriter, r *http.Request) {
@@ -52,6 +50,6 @@ func changeCurrentHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := viewJSON(w, dto)
 	if err != nil {
-		log.Println(err)
+		errorJSON(w, "Failed to write json", 500, err)
 	}
 }
