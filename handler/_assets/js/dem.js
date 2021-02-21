@@ -27,6 +27,16 @@ document.addEventListener("DOMContentLoaded", function() {
     dialog.close();
   });
 
+  var lists = document.querySelectorAll('.remove-project');
+  lists.forEach(function(value) {
+    value.addEventListener('click', function(e) {
+      var id = e.target.getAttribute("data-id");
+      confirmDem("Delete?","Deleteing a project is irreversibele,is that okay?",function() {
+        location.href = "/project/remove/" + id;
+      }) ;
+    });
+  });
+
   //kind list
   var lists = document.querySelectorAll('.list-item');
 
@@ -256,6 +266,15 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
+  function fitWindow() {
+    var table = document.getElementById("view-table");
+    table.style.height = (window.innerHeight - 150) + "px";
+  }
+  window.addEventListener('resize',function() {
+      fitWindow();
+  }, false );
+  fitWindow();
+
 });
 
 var darkMode = document.querySelector('#darkmode');
@@ -267,7 +286,7 @@ darkMode.addEventListener('change', function() {
 var layout = document.querySelector(".mdl-layout");
 var clicked = false;
 layout.addEventListener("mdl-componentupgraded",function(e) {
-  if ( projectID == "empty" ) {
+  if ( getCurrent("ID") == "" ) {
     var btn = document.querySelector(".mdl-layout__drawer-button");
     if (btn != null && !clicked) { 
       btn.click();
@@ -325,26 +344,26 @@ function parsePostValue(params) {
 }
 
 var handler = (function(){
-    var events = {},
-    key = 0;
-    return {
-        add: function(target, type, listener, capture) {
-            target.addEventListener(type, listener, capture);
-            events[key] = {
-                target: target,
-                type: type,
-                listener: listener,
-                capture: capture
-            };
-            return key++;
-        },
-        remove: function(key) {
-            if(key in events) {
-                var e = events[key];
-                e.target.removeEventListener(e.type, e.listener, e.capture);
-            }
-        }
-    };
+  var events = {},
+  key = 0;
+  return {
+    add: function(target, type, listener, capture) {
+      target.addEventListener(type, listener, capture);
+      events[key] = {
+        target: target,
+        type: type,
+          listener: listener,
+          capture: capture
+      };
+      return key++;
+    },
+    remove: function(key) {
+      if(key in events) {
+        var e = events[key];
+          e.target.removeEventListener(e.type, e.listener, e.capture);
+      }
+    }
+  };
 }());
 
 function confirmDem(title,msg,yesFunc) {
@@ -380,5 +399,4 @@ function confirmDem(title,msg,yesFunc) {
 
   dialog.showModal();
 }
-
 

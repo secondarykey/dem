@@ -74,7 +74,7 @@ func SetConsole(opts []ConsoleOption) error {
 
 	currentSetting = newSetting()
 	p := NewProject(fmt.Sprintf("%s:%d", gConsole.Host, gConsole.Port), gConsole.ProjectID)
-	currentSetting.AddProject(p)
+	currentSetting.addProject(p)
 
 	return nil
 }
@@ -82,22 +82,9 @@ func SetConsole(opts []ConsoleOption) error {
 func LoadSetting() error {
 	currentSetting = newSetting()
 	conf := GetViewer()
-
 	err := currentSetting.read(conf.ConfigFile)
 	if err != nil {
 		return xerrors.Errorf("Setting Read() error: %w", err)
-	}
-
-	return nil
-}
-
-func AddProject(p *Project) error {
-	currentSetting.AddProject(p)
-	conf := GetViewer()
-
-	err := currentSetting.write(conf.ConfigFile)
-	if err != nil {
-		return xerrors.Errorf("Setting write() error: %w", err)
 	}
 	return nil
 }

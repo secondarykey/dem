@@ -89,7 +89,13 @@
         <nav class="navigation mdl-navigation mdl-color--blue-grey-800">
 
 {{ range .Projects }}
-          <a class="mdl-navigation__link" href="/{{.ID}}/"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">forward</i>{{.Endpoint}}[{{ .ProjectID }}]</a>
+          <div class="mdl-navigation__link">
+            <a class="project-link" href="/{{.ID}}/">
+              <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">forward</i>{{.Endpoint}}[{{ .ProjectID }}]
+            </a>
+            <div class="mdl-layout-spacer"></div>
+            <i class="material-icons remove-project" data-id="{{.ID}}">remove_circle</i>
+          </div>
 {{ end }}
 
           <a class="mdl-navigation__link" id="registerProject"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">add_circle</i>New Project</a>

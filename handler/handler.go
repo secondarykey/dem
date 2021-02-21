@@ -47,7 +47,7 @@ func Register() error {
 
 	r.HandleFunc("/view/dark/{val}", changeDarkModeHandler)
 
-	r.HandleFunc("/project/delete.json", deleteProjectHandler)
+	r.HandleFunc("/project/remove/{id}", deleteProjectHandler)
 	r.HandleFunc("/project/add.json", registerProjectHandler)
 
 	r.HandleFunc("/namespace/change", changeCurrentHandler)
@@ -71,7 +71,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	current.Kind = ""
 	current.Limit = config.DefaultLimit
 	current.Namespace = config.DefaultNamespace
-	config.SetCurrent(&current)
+	config.SetCurrentEmbed(&current)
 
 	projects, err := config.GetProjects()
 	if err != nil {
@@ -124,7 +124,7 @@ func viewProjectHandler(w http.ResponseWriter, r *http.Request) {
 	current.Limit = config.DefaultLimit
 	current.Namespace = config.DefaultNamespace
 	current.Kind = ""
-	config.SetCurrent(&current)
+	config.SetCurrentEmbed(&current)
 
 	p := config.SwitchProject(id)
 	if p == nil {

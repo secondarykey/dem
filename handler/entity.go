@@ -44,7 +44,7 @@ func removeEntityHandler(w http.ResponseWriter, r *http.Request) {
 func changeCurrentHandler(w http.ResponseWriter, r *http.Request) {
 
 	e := createCurrent(r)
-	config.SetCurrent(e)
+	config.SetCurrentEmbed(e)
 
 	dto := struct {
 		Success bool

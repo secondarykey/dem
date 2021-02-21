@@ -8,7 +8,6 @@ import (
 )
 
 var currentSetting *Setting
-var current *Embed
 
 type Setting struct {
 	DarkMode bool
@@ -29,8 +28,24 @@ func newSetting() *Setting {
 	return &s
 }
 
-func (s *Setting) AddProject(p *Project) {
+func (s *Setting) addProject(p *Project) {
 	s.Projects = append(s.Projects, p)
+}
+
+func (s *Setting) deleteProject(id string) error {
+	org := s.Projects
+	s.Projects = make([]*Project, 0)
+
+	for _, p := range org {
+		if p.ID != id {
+			s.Projects = append(s.Projects, p)
+		}
+	}
+
+	if len(org) == len(s.Projects) {
+		return xerrors.Errorf("Not Exists ProjectID[%s]", id)
+	}
+	return nil
 }
 
 func (s *Setting) SetDarkMode(f bool) {
@@ -80,19 +95,4 @@ func (s *Setting) write(name string) error {
 	}
 
 	return nil
-}
-
-type Embed struct {
-	ID        string
-	Kind      string
-	Limit     int
-	Namespace string
-}
-
-func SetCurrent(e *Embed) {
-	current = e
-}
-
-func GetCurrent() *Embed {
-	return current
 }

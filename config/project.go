@@ -1,6 +1,9 @@
 package config
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"golang.org/x/xerrors"
+)
 
 type Project struct {
 	ID        string
@@ -21,13 +24,40 @@ func GetProjects() ([]*Project, error) {
 }
 
 func GetCurrentProject() *Project {
-	return getProject(current.ID)
+	return getProject(currentEmbed.ID)
 }
 
 func SwitchProject(id string) *Project {
 	p := getProject(id)
-	GetCurrent().ID = id
+	GetCurrentEmbed().ID = id
 	return p
+}
+
+func AddProject(p *Project) error {
+
+	s := getCurrentSetting()
+	s.addProject(p)
+
+	conf := GetViewer()
+	err := s.write(conf.ConfigFile)
+	if err != nil {
+		return xerrors.Errorf("Setting write() error: %w", err)
+	}
+	return nil
+}
+
+func DeleteProject(id string) error {
+	s := getCurrentSetting()
+	err := s.deleteProject(id)
+	if err != nil {
+		return xerrors.Errorf("deleteProject() error: %w", err)
+	}
+	conf := GetViewer()
+	err = s.write(conf.ConfigFile)
+	if err != nil {
+		return xerrors.Errorf("Setting write() error: %w", err)
+	}
+	return nil
 }
 
 func getProject(id string) *Project {

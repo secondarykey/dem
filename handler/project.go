@@ -6,11 +6,22 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/secondarykey/dem/config"
 	"github.com/secondarykey/dem/datastore"
 )
 
 func deleteProjectHandler(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	err := config.DeleteProject(id)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	http.Redirect(w, r, "/", 302)
 }
 
 func registerProjectHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +53,7 @@ func registerProjectHandler(w http.ResponseWriter, r *http.Request) {
 func viewKindHandler(w http.ResponseWriter, r *http.Request) {
 
 	e := createCurrent(r)
-	config.SetCurrent(e)
+	config.SetCurrentEmbed(e)
 
 	cursor := r.FormValue("cursor")
 	v := r.FormValue("first")
