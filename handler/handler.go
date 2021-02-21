@@ -30,10 +30,6 @@ type IndexDto struct {
 	Namespace  string
 }
 
-const (
-	defaultNamespace = ""
-)
-
 func init() {
 	var err error
 	templates, err = fs.Sub(embTemplates, "_templates")
@@ -86,9 +82,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	dto.DarkMode = config.GetDarkMode()
 	dto.Limit = config.GetLimit()
 
-	nss := []string{defaultNamespace}
+	nss := []string{config.DefaultNamespace}
 	dto.Namespaces = nss
-	dto.Namespace = defaultNamespace
+	dto.Namespace = config.DefaultNamespace
 
 	err = viewMain(w, dto)
 	if err != nil {
@@ -152,7 +148,9 @@ func viewProjectHandler(w http.ResponseWriter, r *http.Request) {
 	dto.DarkMode = config.GetDarkMode()
 	dto.Limit = config.GetLimit()
 	dto.Namespaces = nss
-	dto.Namespace = defaultNamespace
+	dto.Namespace = config.DefaultNamespace
+
+	config.SetNamespace(dto.Namespace)
 
 	//現在の設定でKindを取得
 	err = viewMain(w, dto)

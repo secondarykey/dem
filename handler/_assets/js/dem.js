@@ -281,7 +281,7 @@ document.addEventListener("DOMContentLoaded", function() {
       document.getElementById("ns-text").textContent = ns;
 
       var xhr = new XMLHttpRequest();
-      xhr.open('POST',"/entity/limit/" + ns);
+      xhr.open('POST',"/namespace/" + ns);
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
       xhr.responseType = 'json';
 

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"cloud.google.com/go/datastore"
+	"github.com/secondarykey/dem/config"
 	"golang.org/x/xerrors"
 )
 
@@ -29,6 +30,9 @@ func GetNamespaces(ctx context.Context) ([]string, error) {
 	var rtn []string
 	for _, key := range keys {
 		space := key.Name
+		if space == "" {
+			space = config.DefaultNamespace
+		}
 		rtn = append(rtn, space)
 	}
 	return rtn, nil

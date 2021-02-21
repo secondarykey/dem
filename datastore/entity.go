@@ -80,7 +80,7 @@ func GetEntities(ctx context.Context, name string, cur string) ([]*Entity, strin
 	}
 
 	ns := config.GetNamespace()
-	if ns != "" {
+	if ns != config.DefaultNamespace {
 		q = q.Namespace(ns)
 	}
 
