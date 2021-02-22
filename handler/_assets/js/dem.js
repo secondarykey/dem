@@ -1,4 +1,5 @@
 var cursor = "";
+var allMode = false;
 
 document.addEventListener("DOMContentLoaded", function() {
 
@@ -99,18 +100,46 @@ document.addEventListener("DOMContentLoaded", function() {
     var input = document.createElement("input");
     input.setAttribute("type","checkbox");
     input.setAttribute("id",id);
+
     input.classList.add("mdl-checkbox__input");
 
-    var btns = document.querySelectorAll(".remove-btn");
     input.addEventListener('change', function(e) {
-      if ( e.target.checked ) {
-        for ( var i = 0; i < btns.length; i++ ) {
-            btns[i].disabled = false;
+
+      if ( allMode ) return;
+
+      var table = document.querySelector('table');
+      var boxes = table.querySelectorAll('tbody .mdl-checkbox__input');
+
+      var remove = true;
+      var view = true;
+
+      for ( var i = 0; i < boxes.length; i++ ) {
+        if ( boxes[i].checked ) {
+          remove = false;
+          if ( !view ) {
+            view = true;
+            break;
+          }
+          view = false;
         }
       }
+      
+      disabledButton(view,remove);
     });
+
     label.appendChild(input);
     return label;
+  }
+
+  function disabledButton(view,remove) {
+    var views = document.querySelectorAll('.view-btn')
+    for ( var i = 0; i < views.length; i++ ) {
+      views[i].disabled = view;
+    }
+    var dels = document.querySelectorAll('.remove-btn')
+    for ( var i = 0; i < dels.length; i++ ) {
+      dels[i].disabled = remove;
+    }
   }
 
   function clearCheck() {
@@ -131,7 +160,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     var table = document.querySelector('table');
     var headerCheckbox = table.querySelector('thead .mdl-data-table__select input');
+
     var headerCheckHandler = function(event) {
+      allMode = true;
       var boxes = table.querySelectorAll('tbody .mdl-checkbox__input');
       if (event.target.checked) {
         for (var i = 0, length = boxes.length; i < length; i++) {
@@ -142,6 +173,13 @@ document.addEventListener("DOMContentLoaded", function() {
           boxes[i].checked = false;
         }
       }
+
+      view = true;
+      if ( boxes.length == 1 ) {
+        view = false;
+      }
+      disabledButton(view,!event.target.checked);
+      allMode = false;
     };
     headerCheckbox.addEventListener('change', headerCheckHandler);
   }
@@ -216,6 +254,23 @@ document.addEventListener("DOMContentLoaded", function() {
       confirmDem("Delete?","Do you want to delete the selected data?",function() {
         deleteRows(delBtns);
       });
+    });
+  }
+
+  var viewBtns = document.querySelectorAll('.view-btn')
+  for ( var i = 0; i < viewBtns.length; i++ )  {     
+    viewBtns[i].addEventListener('click', function(e) {
+      var table = document.querySelector('table');
+      var boxes = table.querySelectorAll('tbody .mdl-checkbox__input');
+      var id = "";
+      for ( var i = 0; i < boxes.length; i++ ) {
+        if (!boxes[i].checked) {
+          continue;
+        }
+        id = boxes[i].id
+        break;
+      }
+      showEntityDialog(id);
     });
   }
 
@@ -325,8 +380,7 @@ function request(url,params,successFunc) {
 
   xhr.onerror = function() {
     var resp = xhr.response;
-    alertDem(resp.Message,resp.Detail,function() {
-    });
+    alertDem(resp.Message,resp.Detail);
   };
 
   params["ID"]        = document.getElementById("ID").value;
@@ -380,6 +434,7 @@ var handler = (function(){
   };
 }());
 
+
 function alertDem(title,msg,okFunc) {
   var dialog = document.querySelector('#alertDialog');
   if (!dialog.showModal) {
@@ -398,7 +453,9 @@ function alertDem(title,msg,okFunc) {
   }
 
   var okKey = handler.add(ok,"click",function() {
-    okFunc();
+    if ( okFunc !== undefined ) {
+      okFunc();
+    }
     dialog.hide();
   });
 
@@ -406,7 +463,7 @@ function alertDem(title,msg,okFunc) {
   dialog.showModal();
 }
 
-function confirmDem(title,msg,yesFunc) {
+function confirmDem(title,msg,yesFunc,noFunc) {
 
   var dialog = document.querySelector('#confirmDialog');
   if (!dialog.showModal) {
@@ -427,11 +484,16 @@ function confirmDem(title,msg,yesFunc) {
   }
 
   var yesKey = handler.add(yes,"click",function() {
-    yesFunc();
+    if ( yesFunc !== undefined ) {
+      yesFunc();
+    }
     dialog.hide();
   });
 
   var noKey = handler.add(no,"click",function() {
+    if ( noFunc !== undefined ) {
+      noFunc();
+    }
     dialog.hide();
   });
 
@@ -441,3 +503,63 @@ function confirmDem(title,msg,yesFunc) {
   dialog.showModal();
 }
 
+function showEntityDialog(id) {
+  var params = new Object();
+  params.key = id;
+  request("/entity/get",params,function(resp) {
+
+    var dialog = document.querySelector('#entityDialog');
+    if (!dialog.showModal) {
+      dialogPolyfill.registerDialog(dialog);
+    }
+
+    var kind = getCurrent("kind");
+
+    var keyElm = dialog.querySelector('#entityKey');
+    keyElm.textContent = kind + "(Key=" + resp.Entity.Key + ")";
+
+    var contentElm = dialog.querySelector('#entityContent');
+    contentElm.innerHTML = "";
+
+    for ( var i = 0; i < resp.Header.length; i++ ) {
+      var names = document.createElement("div");
+      names.classList.add("mdl-cell");
+      names.classList.add("mdl-cell--4-col");
+
+      names.textContent = resp.Header[i];
+      contentElm.appendChild(names);
+
+      var values = document.createElement("div");
+      values.classList.add("mdl-cell");
+      values.classList.add("mdl-cell--8-col");
+      values.textContent = resp.Entity.Values[i];
+      values.style.whiteSpace = "pre-wrap";
+
+      contentElm.appendChild(values);
+    }
+
+    var edit = dialog.querySelector('.edit');
+    var close = dialog.querySelector('.close');
+
+    dialog.hide = function() {
+      dialog.close();
+      handler.remove(dialog.editKey);
+      handler.remove(dialog.closeKey);
+    }
+
+    var editKey = handler.add(edit,"click",function() {
+        //TODO
+      dialog.hide();
+    });
+
+    var closeKey = handler.add(close,"click",function() {
+      dialog.hide();
+    });
+
+    dialog.editKey = editKey;
+    dialog.closeKey = closeKey;
+
+    dialog.showModal();
+
+  });
+}

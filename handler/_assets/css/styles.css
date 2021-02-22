@@ -230,3 +230,11 @@ i.remove-project {
   color:#dd6666 !important;
 } 
 
+#entityDialog {
+  width:500px;
+}
+
+#entityKey {
+  font-size:20px;
+}
+

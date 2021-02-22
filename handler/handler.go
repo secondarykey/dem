@@ -53,7 +53,8 @@ func Register() error {
 	r.HandleFunc("/namespace/change", changeCurrentHandler)
 	r.HandleFunc("/entity/limit/change", changeCurrentHandler)
 
-	r.HandleFunc("/entity/view", viewKindHandler)
+	r.HandleFunc("/entity/view", viewEntitiesHandler)
+	r.HandleFunc("/entity/get", getEntityHandler)
 	r.HandleFunc("/entity/remove", removeEntityHandler)
 
 	r.HandleFunc("/{id}/", viewProjectHandler)

@@ -61,6 +61,33 @@ func (e *Entity) String() string {
 	return b.String()
 }
 
+func GetEntity(ctx context.Context, name string, strKey string, intKey int64) (*Entity, error) {
+
+	id, err := setEnvironment()
+	if err != nil {
+		return nil, xerrors.Errorf("setEnvironment() error:%w", err)
+	}
+
+	cli, err := datastore.NewClient(ctx, id)
+	if err != nil {
+		return nil, xerrors.Errorf("datastore.NewClient() error: %w", err)
+	}
+
+	var key *datastore.Key
+	if strKey == "" {
+		key = datastore.IDKey(name, intKey, nil)
+	} else {
+		key = datastore.NameKey(name, strKey, nil)
+	}
+
+	var entity Entity
+	err = cli.Get(ctx, key, &entity)
+	if err != nil {
+		return nil, xerrors.Errorf("datastore.Get() error: %w", err)
+	}
+	return &entity, nil
+}
+
 func GetEntities(ctx context.Context, name string, limit int, cur string, ns string) ([]*Entity, string, error) {
 
 	id, err := setEnvironment()

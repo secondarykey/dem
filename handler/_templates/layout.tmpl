@@ -157,8 +157,6 @@
         <input type="hidden" id="namespace" name="namespace" value="{{ .Current.Namespace }}"/>
 
       </main>
-
-
     </div>
 
     <dialog id="projectDialog" class="mdl-dialog">
@@ -186,6 +184,15 @@
       <div class="mdl-dialog__actions">
         <button type="button" class="mdl-button yes">Yes</button>
         <button type="button" class="mdl-button no">No</button>
+      </div>
+    </dialog>
+
+    <dialog id="entityDialog" class="mdl-dialog">
+      <h4 class="mdl-dialog__title" id="entityKey"></h4>
+      <div id="entityContent" class="mdl-grid"></div>
+      <div class="mdl-dialog__actions">
+        <button type="button" class="mdl-button close">Close</button>
+        <button type="button" class="mdl-button edit" disabled>Edit</button>
       </div>
     </dialog>
 
