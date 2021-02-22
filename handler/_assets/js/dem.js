@@ -104,32 +104,34 @@ document.addEventListener("DOMContentLoaded", function() {
     input.classList.add("mdl-checkbox__input");
 
     input.addEventListener('change', function(e) {
-
       if ( allMode ) return;
-
-      var table = document.querySelector('table');
-      var boxes = table.querySelectorAll('tbody .mdl-checkbox__input');
-
-      var remove = true;
-      var view = true;
-
-      for ( var i = 0; i < boxes.length; i++ ) {
-        if ( boxes[i].checked ) {
-          remove = false;
-          if ( !view ) {
-            view = true;
-            break;
-          }
-          view = false;
-        }
-      }
-      
-      disabledButton(view,remove);
+      changeButton();
     });
 
     label.appendChild(input);
     return label;
   }
+
+  function changeButton() {
+    var table = document.querySelector('table');
+    var boxes = table.querySelectorAll('tbody .mdl-checkbox__input');
+
+    var remove = true;
+    var view = true;
+
+    for ( var i = 0; i < boxes.length; i++ ) {
+      if ( boxes[i].checked ) {
+        remove = false;
+        if ( !view ) {
+          view = true;
+          break;
+        }
+        view = false;
+      }
+    }
+    disabledButton(view,remove);
+  }
+      
 
   function disabledButton(view,remove) {
     var views = document.querySelectorAll('.view-btn')
@@ -223,6 +225,31 @@ document.addEventListener("DOMContentLoaded", function() {
         td.appendChild(txt);
         elm.appendChild(td);
       }
+
+      var cc = -1;
+      elm.addEventListener("mousedown",function(e) {
+         var t = e.target;
+         if ( t.tagName != "TD" ) {
+           return;
+         } 
+         var check = t.parentElement.querySelector("input");
+
+         if ( cc == -1 ) {
+           cc = 1;
+           setTimeout( function() {
+             if ( cc != 2 )  {
+               check.checked = !check.checked;
+               changeButton();
+             }
+             cc = -1;
+           },200);
+         } else {
+           cc = 2;
+           e.preventDefault();
+           showEntityDialog(check.id);
+         }
+      });
+
       tb.appendChild(elm)
     }
 
