@@ -51,11 +51,18 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
+  var lock = false;
   function view(first) {
 
     if ( getCurrent("kind") == "" ) {
       return "";
     }
+
+    if ( lock ) {
+        return;
+    }
+
+    lock = true;
 
     if ( first ) {
       cursor = "";
@@ -85,6 +92,9 @@ document.addEventListener("DOMContentLoaded", function() {
       componentHandler.upgradeElement(table,'MaterialDataTable');
 
       clearCheck();
+      lock = false;
+    },function(err) {
+      lock = false;
     });
   }
 
@@ -386,7 +396,7 @@ layout.addEventListener("mdl-componentupgraded",function(e) {
   }
 });
 
-function request(url,params,successFunc) {
+function request(url,params,successFunc,errorFunc) {
 
   var xhr = new XMLHttpRequest();
 
@@ -399,8 +409,10 @@ function request(url,params,successFunc) {
     if ( resp.Success ) {
       successFunc(resp);
     } else {
-      //Error
       alertDem(resp.Message,resp.Detail,function() {
+        if ( errorFunc !== undefined ) {
+            errorFunc(resp);
+        }
       });
     }
   };
@@ -408,6 +420,9 @@ function request(url,params,successFunc) {
   xhr.onerror = function() {
     var resp = xhr.response;
     alertDem(resp.Message,resp.Detail);
+    if ( errorFunc !== undefined ) {
+      errorFunc(resp);
+    }
   };
 
   params["ID"]        = document.getElementById("ID").value;
