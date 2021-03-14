@@ -13,7 +13,7 @@ import (
 )
 
 func viewMain(w http.ResponseWriter, dto interface{}) error {
-	return view(w, dto, "layout.tmpl")
+	return view(w, dto, "main.tmpl")
 }
 
 func view(w http.ResponseWriter, dto interface{}, files ...string) error {
@@ -22,9 +22,13 @@ func view(w http.ResponseWriter, dto interface{}, files ...string) error {
 		//"add": func(a, b int) int { return a + b },
 	}
 
+	viewFiles := make([]string, 0, len(files)+1)
+	viewFiles = append(viewFiles, "layout.tmpl")
+	viewFiles = append(viewFiles, files...)
+
 	root := template.New("layout.tmpl").Funcs(funcMap)
 
-	tmpl, err := root.ParseFS(templates, files...)
+	tmpl, err := root.ParseFS(templates, viewFiles...)
 	if err != nil {
 		return xerrors.Errorf("template.ParseFS() error: %w", err)
 	}

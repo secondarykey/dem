@@ -121,7 +121,7 @@ func convertDisplayData(kind *datastore.Kind, entity *datastore.Entity) ([]strin
 			default:
 				v = fmt.Sprintf("%v", nv)
 			}
-
+			fmt.Printf("%s = [%T]\n", prop.Name, val)
 		}
 		datum.Values[idx] = v
 	}
