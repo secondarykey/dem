@@ -334,10 +334,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var params = new Object();
     params.ids = JSON.stringify(ids);
     request("/entity/remove",params,function(resp) {
-      for (var i = 0, length = rows.length; i < length; i++) {
-        var row = rows[i];
-        row.parentNode.removeChild(row);
-      }
+        view(true);
     });
   }
 
