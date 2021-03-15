@@ -234,6 +234,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
       var row = data[i];
       var elm = document.createElement("tr");
+      elm.classList.add("row");
 
       var td = document.createElement("td");
       var label = createCheckboxLabel(row.Key);
@@ -433,7 +434,6 @@ function request(url,params,successFunc,errorFunc) {
     if ( resp != null ) {
         msg = resp;
     }
-    console.log(resp);
     alertDem("Error",msg,function() {
       if ( errorFunc !== undefined ) {
         errorFunc(resp);
@@ -565,9 +565,6 @@ function setViewData(tag,name,type,current) {
 
     var v = current.View;
     var r = current.Real;
-
-    console.log(v);
-    console.log(r);
 
     switch ( type ) {
         case 10: //Omitted

@@ -84,6 +84,7 @@ html, body {
   color: rgba(255, 255, 255, 0.56);
   font-weight: 500;
 }
+
 .layout .navigation .mdl-navigation__link:hover {
   background-color: #00BCD4;
   color: #37474F;
@@ -93,6 +94,10 @@ html, body {
   font-size: 24px;
   color: rgba(255, 255, 255, 0.56);
   margin-right: 32px;
+}
+
+li.kind-name {
+  cursor:pointer;
 }
 
 li.kind-name.selected {
@@ -148,6 +153,14 @@ li.kind-name:hover {
   margin-bottom: 40px;
   z-index: 900;
   width:100px;
+}
+
+tr.row {
+  cursor:pointer;
+}
+
+#nextUpdate {
+  cursor:pointer;
 }
 
 #view-table {
