@@ -542,6 +542,44 @@ function confirmDem(title,msg,yesFunc,noFunc) {
   dialog.showModal();
 }
 
+function setViewData(tag,name,type,current) {
+
+    var v = current.View;
+    var r = current.Real;
+
+    console.log(v);
+    console.log(r);
+
+    switch ( type ) {
+        case 10: //Omitted
+            //長過ぎるので本当の表示をクリックしたら表示
+            tag.textContent = v;
+            tag.addEventListener("click",function() {
+                tag.textContent = r;
+            });
+            break;
+        case 20: //Expand
+            //構造体なので表示を別途行う
+            break;
+        case 30: //Slice
+            //インデックスでの表示にする
+            break;
+        case 40: //Download
+            //ダウンロードする
+            tag.textContent = v;
+            break;
+        case -1: //Error
+            //赤文字にする？
+            break;
+        default: //Normal
+            //そのまま表示
+            tag.textContent = v;
+            break;
+    }
+
+    return;
+}
+
 function showEntityDialog(id) {
   var params = new Object();
   params.key = id;
@@ -565,14 +603,20 @@ function showEntityDialog(id) {
       names.classList.add("mdl-cell");
       names.classList.add("mdl-cell--4-col");
 
-      names.textContent = resp.Header[i];
+      var name = resp.Header[i];
+      names.textContent = name;
       contentElm.appendChild(names);
 
       var values = document.createElement("div");
       values.classList.add("mdl-cell");
       values.classList.add("mdl-cell--8-col");
-      values.textContent = resp.Entity.Values[i].View;
+
       values.style.whiteSpace = "pre-wrap";
+
+      var current = resp.Entity.Values[i];
+      var type = resp.Entity.Types[i];
+
+      setViewData(values,name,type,current)
 
       contentElm.appendChild(values);
     }

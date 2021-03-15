@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/secondarykey/dem/config"
@@ -25,12 +26,12 @@ type Value struct {
 type ViewType int
 
 const (
-	NormalType ViewType = iota
-	OmittedType
-	ExpandType
-	SliceType
-	DownloadType
-	ErrorType
+	NormalType   ViewType = ViewType(0)
+	OmittedType           = ViewType(10)
+	ExpandType            = ViewType(20)
+	SliceType             = ViewType(30)
+	DownloadType          = ViewType(40)
+	ErrorType             = ViewType(-1)
 )
 
 func getEntityHandler(w http.ResponseWriter, r *http.Request) {
@@ -139,9 +140,11 @@ func convertViewEntity(kind *datastore.Kind, entity *datastore.Entity) ([]string
 		header[idx] = prop.Name
 		val, ok := entity.Values[prop.Name]
 		v := ""
+		r := ""
 		t := NormalType
 		if !ok {
 			v = "Mismatch " + prop.Name
+			t = ErrorType
 		} else {
 			switch nv := val.(type) {
 			case []uint8:
@@ -149,18 +152,32 @@ func convertViewEntity(kind *datastore.Kind, entity *datastore.Entity) ([]string
 				t = DownloadType
 			case time.Time:
 				v = fmt.Sprintf("%v", nv)
+			case string:
+				cut := cutData(nv)
+				if cut != nv {
+					t = OmittedType
+					r = nv
+					v = cut
+				} else {
+					t = NormalType
+					r = nv
+					v = nv
+				}
 			case datastore.Entity:
+
 				v = fmt.Sprintf("%v", nv)
+
 			default:
 				v = fmt.Sprintf("%v", nv)
 			}
-			fmt.Printf("%s = [%T]\n", prop.Name, val)
 		}
+
 		datum.Types[idx] = t
 
 		setV := Value{}
 		setV.View = v
-		setV.Real = v
+		setV.Real = r
+
 		datum.Values[idx] = setV
 	}
 
@@ -217,10 +234,22 @@ func cutData(v interface{}) string {
 
 	switch val := v.(type) {
 	case string:
+
+		n := false
+		if idx := strings.Index(val, "\n"); idx != -1 {
+			val = val[:idx-1]
+			n = true
+		}
+
 		r := []rune(val)
 		if len(r) > 15 {
 			return string(r[0:13]) + "..."
 		}
+
+		if n {
+			return val + "..."
+		}
+
 		return val
 	default:
 		str := fmt.Sprintf("%v", v)
