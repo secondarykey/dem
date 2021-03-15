@@ -414,12 +414,18 @@ function request(url,params,successFunc,errorFunc) {
     }
   };
 
-  xhr.onerror = function() {
+  xhr.onerror = function(prog) {
     var resp = xhr.response;
-    alertDem(resp.Message,resp.Detail);
-    if ( errorFunc !== undefined ) {
-      errorFunc(resp);
+    var msg = "connection refused";
+    if ( resp != null ) {
+        msg = resp;
     }
+    console.log(resp);
+    alertDem("Error",msg,function() {
+      if ( errorFunc !== undefined ) {
+        errorFunc(resp);
+      }
+    });
   };
 
   params["ID"]        = document.getElementById("ID").value;
