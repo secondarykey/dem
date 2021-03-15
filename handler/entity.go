@@ -5,9 +5,32 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/secondarykey/dem/config"
 	"github.com/secondarykey/dem/datastore"
+)
+
+type Entity struct {
+	Key    string
+	Types  []ViewType
+	Values []Value
+}
+
+type Value struct {
+	View string
+	Real string
+}
+
+type ViewType int
+
+const (
+	NormalType ViewType = iota
+	OmittedType
+	ExpandType
+	SliceType
+	DownloadType
+	ErrorType
 )
 
 func getEntityHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +65,7 @@ func getEntityHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	props, obj := convertDisplayData(kind, entity)
+	props, obj := convertViewEntity(kind, entity)
 
 	dto := struct {
 		Success bool
@@ -80,7 +103,7 @@ func viewEntitiesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	props, values := transformData(kinds[0], entities)
+	props, values := convertViewEntities(kinds[0], entities)
 
 	dto := struct {
 		Success bool
@@ -95,7 +118,10 @@ func viewEntitiesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func convertDisplayData(kind *datastore.Kind, entity *datastore.Entity) ([]string, *Entity) {
+//
+// convertViewEntiry is displayed dialog data
+//
+func convertViewEntity(kind *datastore.Kind, entity *datastore.Entity) ([]string, *Entity) {
 
 	datum := Entity{}
 	key := entity.Key
@@ -105,31 +131,46 @@ func convertDisplayData(kind *datastore.Kind, entity *datastore.Entity) ([]strin
 		datum.Key = fmt.Sprintf("%d", key.ID)
 	}
 
-	datum.Values = make([]string, len(kind.Properties))
+	datum.Values = make([]Value, len(kind.Properties))
+	datum.Types = make([]ViewType, len(kind.Properties))
 	header := make([]string, len(kind.Properties))
 	for idx, prop := range kind.Properties {
 
 		header[idx] = prop.Name
 		val, ok := entity.Values[prop.Name]
 		v := ""
+		t := NormalType
 		if !ok {
 			v = "Mismatch " + prop.Name
 		} else {
 			switch nv := val.(type) {
 			case []uint8:
 				v = fmt.Sprintf("byte length %d", len(nv))
+				t = DownloadType
+			case time.Time:
+				v = fmt.Sprintf("%v", nv)
+			case datastore.Entity:
+				v = fmt.Sprintf("%v", nv)
 			default:
 				v = fmt.Sprintf("%v", nv)
 			}
 			fmt.Printf("%s = [%T]\n", prop.Name, val)
 		}
-		datum.Values[idx] = v
+		datum.Types[idx] = t
+
+		setV := Value{}
+		setV.View = v
+		setV.Real = v
+		datum.Values[idx] = setV
 	}
 
 	return header, &datum
 }
 
-func transformData(kind *datastore.Kind, entities []*datastore.Entity) ([]string, []*Entity) {
+//
+// convertViewEntitie() is displayed table data
+//
+func convertViewEntities(kind *datastore.Kind, entities []*datastore.Entity) ([]string, []*Entity) {
 
 	props := make([]string, len(kind.Properties)+1)
 	props[0] = "Key"
@@ -150,15 +191,19 @@ func transformData(kind *datastore.Kind, entities []*datastore.Entity) ([]string
 			kv = datum.Key
 		}
 
-		vals := make([]string, len(kind.Properties)+1)
-		vals[0] = kv
+		vals := make([]Value, len(kind.Properties)+1)
+		keyVal := Value{}
+		keyVal.View = kv
+		vals[0] = keyVal
 
 		for jdx, prop := range kind.Properties {
 			v, ok := entity.Values[prop.Name]
 			if !ok {
 				v = "Mismatch," + prop.Name
 			}
-			vals[jdx+1] = cutData(v)
+			viewVal := Value{}
+			viewVal.View = cutData(v)
+			vals[jdx+1] = viewVal
 		}
 
 		datum.Values = vals
@@ -185,11 +230,6 @@ func cutData(v interface{}) string {
 		return str
 	}
 	return ""
-}
-
-type Entity struct {
-	Key    string
-	Values []string
 }
 
 func removeEntityHandler(w http.ResponseWriter, r *http.Request) {

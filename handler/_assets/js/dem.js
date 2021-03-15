@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function() {
       for ( var j = 0; j < colLen; j++ ) {
         var td = document.createElement("td");
         td.classList.add("mdl-data-table__cell--non-numeric");
-        var txt = document.createTextNode(row.Values[j]);
+        var txt = document.createTextNode(row.Values[j].View);
         td.appendChild(txt);
         elm.appendChild(td);
       }
@@ -571,7 +571,7 @@ function showEntityDialog(id) {
       var values = document.createElement("div");
       values.classList.add("mdl-cell");
       values.classList.add("mdl-cell--8-col");
-      values.textContent = resp.Entity.Values[i];
+      values.textContent = resp.Entity.Values[i].View;
       values.style.whiteSpace = "pre-wrap";
 
       contentElm.appendChild(values);

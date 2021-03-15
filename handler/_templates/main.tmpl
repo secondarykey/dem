@@ -1,0 +1,92 @@
+{{ define "content" }}
+
+  <div class="mdl-grid">
+
+    <div class="mdl-cell mdl-cell--2-col">
+      <ul class="mdl-list">
+      {{ range .Kinds }}
+        <li class="mdl-list__item list-item" data-name="{{.Name}}">
+          <span class="mdl-list__item-primary-content mdl-color-text--grey-600" data-name="{{.Name}}"> {{.Name}} </span>
+        </li>
+      {{ end }}
+      </ul>
+    </div>
+
+    <div class="mdl-cell mdl-cell--10-col">
+
+      <div id="limit-dropdown" class="dropdown" style="width:140px;">
+        <div id="limitLabel" class="mdl-color-text--grey-600">Limit:</div>
+        <span id="limit-text" class="mdl-color-text--grey-600">{{ .Current.Limit }}</span>
+        <div class="mdl-layout-spacer"></div>
+        <button id="limitBtn" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+          <i class="material-icons" role="presentation">arrow_drop_down</i>
+          <span class="visuallyhidden">Limit</span>
+        </button>
+        <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="limitBtn">
+          <li class="mdl-menu__item limit-list" data-value="10">10</li>
+          <li class="mdl-menu__item limit-list" data-value="20">20</li>
+          <li class="mdl-menu__item limit-list" data-value="50">50</li>
+          <li class="mdl-menu__item limit-list" data-value="100">100</li>
+          <li class="mdl-menu__item limit-list" data-value="-1">None</li>
+        </ul>
+      </div>
+
+      <table id="view-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp mdl-color--grey-100 mdl-color-text--grey-600">
+        <thead>
+          <tr id="table-header"></tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+      
+    </div>
+  </div>
+  <!-- now settings -->
+  <input type="hidden" id="ID"        name="ID"        value="{{ .Current.ID }}"/>
+  <input type="hidden" id="kind"      name="kind"      value="{{ .Current.Kind }}"/>
+  <input type="hidden" id="limit"     name="limit"     value="{{ .Current.Limit }}"/>
+  <input type="hidden" id="namespace" name="namespace" value="{{ .Current.Namespace }}"/>
+
+
+  <dialog id="projectDialog" class="mdl-dialog">
+    <h4 class="mdl-dialog__title">New Project</h4>
+    <div class="mdl-dialog__content mdl-grid">
+      <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--12-col">
+        <input class="mdl-textfield__input" type="text" id="endpoint">
+        <label class="mdl-textfield__label" for="endpoint">e.g) localhost:8081</label>
+      </div>
+      <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--12-col">
+        <input class="mdl-textfield__input" type="text" id="projectID">
+        <label class="mdl-textfield__label" for="projectID">datastore project id</label>
+      </div>
+    </div>
+
+    <div class="mdl-dialog__actions">
+      <button type="button" class="mdl-button entry">Entry</button>
+      <button type="button" class="mdl-button close">Close</button>
+    </div>
+  </dialog>
+
+  <dialog id="entityDialog" class="mdl-dialog">
+    <h4 class="mdl-dialog__title" id="entityKey"></h4>
+    <div id="entityContent" class="mdl-grid"></div>
+    <div class="mdl-dialog__actions">
+      <button type="button" class="mdl-button close">Close</button>
+      <button type="button" class="mdl-button edit" disabled>Edit</button>
+    </div>
+  </dialog>
+
+  <button id="viewBtnNE" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored view-btn" disabled>
+    VIEW 
+  </button>
+  <button id="viewBtnSE" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored view-btn" disabled>
+    VIEW 
+  </button>
+
+  <button id="removeBtnNE" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent remove-btn" disabled>
+    DELETE
+  </button>
+  <button id="removeBtnSE" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent remove-btn" disabled>
+    DELETE
+  </button>
+
+{{ end }}
