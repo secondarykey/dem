@@ -5,8 +5,8 @@
     <div class="mdl-cell mdl-cell--2-col">
       <ul class="mdl-list">
       {{ range .Kinds }}
-        <li class="mdl-list__item list-item" data-name="{{.Name}}">
-          <span class="mdl-list__item-primary-content mdl-color-text--grey-600" data-name="{{.Name}}"> {{.Name}} </span>
+        <li class="mdl-list__item kind-name" data-name="{{.Name}}">
+          <span class="mdl-list__item-primary-content mdl-color-text--grey-600"> {{.Name}} </span>
         </li>
       {{ end }}
       </ul>

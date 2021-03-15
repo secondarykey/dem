@@ -95,7 +95,11 @@ html, body {
   margin-right: 32px;
 }
 
-.list-item:hover {
+li.kind-name.selected {
+  background-color:#dddddd;
+}
+
+li.kind-name:hover {
   background-color:#dddddd;
   transition-duration:.28s;
   transition-timing-function:cubic-bezier(.4,0,.2,1);

@@ -42,12 +42,25 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   //kind list
-  var lists = document.querySelectorAll('.list-item');
-
+  var lists = document.querySelectorAll('.kind-name');
   lists.forEach(function(value) {
     value.addEventListener('click', function(e) {
-      setCurrent("kind",e.target.getAttribute("data-name"));
+
+      var kind = e.target
+      if ( kind.tagName == "SPAN" ) {
+          kind = kind.parentElement;
+      }
+
+      setCurrent("kind",kind.getAttribute("data-name"));
       view(true);
+
+      lists.forEach(function(value) {
+          if ( value == kind ) {
+              value.classList.add("selected");
+          } else {
+              value.classList.remove("selected");
+          }
+      });
     });
   });
 
