@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function() {
       }
 
       setCurrent("kind",kind.getAttribute("data-name"));
-      view(true);
+      viewTable(true);
 
       lists.forEach(function(value) {
           if ( value == kind ) {
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   var lock = false;
-  function view(first) {
+  function viewTable(first) {
 
     if ( getCurrent("kind") == "" ) {
       return "";
@@ -111,10 +111,10 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  function createCheckboxLabel(id) {
+  function createCheckboxLabel(real) {
 
     var label = document.createElement("label");
-    label.setAttribute("for",id);
+    label.setAttribute("for",real);
     label.classList.add("mdl-checkbox");
     label.classList.add("mdl-js-checkbox");
     label.classList.add("mdl-js-ripple-effect");
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
     var input = document.createElement("input");
     input.setAttribute("type","checkbox");
-    input.setAttribute("id",id);
+    input.setAttribute("id",real);
 
     input.classList.add("mdl-checkbox__input");
 
@@ -237,7 +237,7 @@ document.addEventListener("DOMContentLoaded", function() {
       elm.classList.add("row");
 
       var td = document.createElement("td");
-      var label = createCheckboxLabel(row.Key);
+      var label = createCheckboxLabel(row.RealKey);
       td.appendChild(label);
       elm.appendChild(td);
 
@@ -282,7 +282,7 @@ document.addEventListener("DOMContentLoaded", function() {
       tr.id = "nextUpdate";
       tr.addEventListener("click",function(e) {
         tr.parentElement.removeChild(tr);
-        view(false);
+        viewTable(false);
       });
 
       var td = document.createElement("td");
@@ -348,7 +348,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var params = new Object();
     params.ids = JSON.stringify(ids);
     request("/entity/remove",params,function(resp) {
-        view(true);
+        viewTable(true);
     });
   }
 
@@ -361,7 +361,7 @@ document.addEventListener("DOMContentLoaded", function() {
       document.getElementById("limit-text").textContent = e.target.textContent;
       setCurrent("limit",limit)
       request("/entity/limit/change",new Object(),function(resp) {
-        view(true);
+        viewTable(true);
       });
     });
   }
@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function() {
       document.getElementById("ns-text").textContent = ns;
       setCurrent("namespace",ns);
       request("/namespace/change",new Object(),function(resp) { 
-        view(true);
+        viewTable(true);
       });
     });
   }
@@ -609,7 +609,7 @@ function showEntityDialog(id) {
     var kind = getCurrent("kind");
 
     var keyElm = dialog.querySelector('#entityKey');
-    keyElm.textContent = kind + "(Key=" + resp.Entity.Key + ")";
+    keyElm.textContent = kind + "(Key=" + resp.Entity.ViewKey + ")";
 
     var contentElm = dialog.querySelector('#entityContent');
     contentElm.innerHTML = "";

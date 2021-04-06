@@ -3,7 +3,6 @@ package datastore
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"cloud.google.com/go/datastore"
@@ -61,7 +60,7 @@ func (e *Entity) String() string {
 	return b.String()
 }
 
-func GetEntity(ctx context.Context, name string, strKey string, intKey int64) (*Entity, error) {
+func GetEntity(ctx context.Context, name string, strkey string) (*Entity, error) {
 
 	id, err := setEnvironment()
 	if err != nil {
@@ -74,10 +73,9 @@ func GetEntity(ctx context.Context, name string, strKey string, intKey int64) (*
 	}
 
 	var key *datastore.Key
-	if strKey == "" {
-		key = datastore.IDKey(name, intKey, nil)
-	} else {
-		key = datastore.NameKey(name, strKey, nil)
+	key, err = datastore.DecodeKey(strkey)
+	if err != nil {
+		return nil, xerrors.Errorf("datasdtore.DecodeKey() error: %w", err)
 	}
 
 	var entity Entity
@@ -157,26 +155,14 @@ func RemoveEntity(ctx context.Context, name string, ids []string) error {
 		return xerrors.Errorf("datastore.NewClient() error: %w", err)
 	}
 
-	kinds, err := GetKinds(ctx, name)
-	if err != nil {
-		return xerrors.Errorf("GetKinds() error: %w", err)
-	}
-
-	kind := kinds[0]
-
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 		keys := make([]*datastore.Key, len(ids))
+
 		for idx, v := range ids {
 			var key *datastore.Key
-			switch kind.KeyType {
-			case IntKeyType:
-				i, err := strconv.ParseInt(v, 10, 64)
-				if err != nil {
-					return xerrors.Errorf("strconv.ParseInt() error: %w", err)
-				}
-				key = datastore.IDKey(name, i, nil)
-			case StringKeyType:
-				key = datastore.NameKey(name, v, nil)
+			key, err = datastore.DecodeKey(v)
+			if err != nil {
+				return xerrors.Errorf("datastore.DecodeKey() error: %w", err)
 			}
 			keys[idx] = key
 		}

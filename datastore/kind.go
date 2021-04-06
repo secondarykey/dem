@@ -12,14 +12,13 @@ import (
 )
 
 type Kind struct {
-	KeyType    KeyType
 	Name       string
 	Properties []*Property
 }
 
 func (k Kind) String() string {
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("%s(Key is %s)", k.Name, k.KeyType))
+	b.WriteString(fmt.Sprintf("%s", k.Name))
 	for _, prop := range k.Properties {
 		b.WriteString("\n  " + prop.String())
 	}
@@ -27,19 +26,15 @@ func (k Kind) String() string {
 }
 
 func (k *Kind) setProperties(cli *datastore.Client, ctx context.Context) error {
+
 	q := datastore.NewQuery(k.Name).Limit(1)
 	var dst []Entity
-	keys, err := cli.GetAll(ctx, q, &dst)
+	_, err := cli.GetAll(ctx, q, &dst)
 	if err != nil {
 		return xerrors.Errorf("Property GetAll() error: %w", err)
 	}
 
-	key := keys[0]
-	k.KeyType = StringKeyType
-	if key.Name == "" {
-		k.KeyType = IntKeyType
-	}
-
+	//TODO 他にスキーマのとり方を考える
 	for _, entity := range dst {
 		vals := entity.Values
 		k.Properties = make([]*Property, len(vals))
@@ -65,23 +60,6 @@ type Property struct {
 
 func (p Property) String() string {
 	return fmt.Sprintf("%-15s: %v", p.Name, p.Type)
-}
-
-type KeyType int
-
-const (
-	StringKeyType KeyType = iota
-	IntKeyType
-)
-
-func (t KeyType) String() string {
-	switch t {
-	case StringKeyType:
-		return "String"
-	case IntKeyType:
-		return "Int"
-	}
-	return "Undefined"
 }
 
 func GetKinds(ctx context.Context, names ...string) ([]*Kind, error) {

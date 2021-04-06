@@ -13,9 +13,10 @@ import (
 )
 
 type Entity struct {
-	Key    string
-	Types  []ViewType
-	Values []Value
+	ViewKey string
+	RealKey string
+	Types   []ViewType
+	Values  []Value
 }
 
 type Value struct {
@@ -47,20 +48,7 @@ func getEntityHandler(w http.ResponseWriter, r *http.Request) {
 	kind := kinds[0]
 
 	key := r.FormValue("key")
-	strKey := ""
-	intKey := 0
-
-	if kind.KeyType == datastore.StringKeyType {
-		strKey = key
-	} else {
-		intKey, err = strconv.Atoi(key)
-		if err != nil {
-			errorJSON(w, "Failed to parse key["+key+"]", 500, err)
-			return
-		}
-	}
-
-	entity, err := datastore.GetEntity(r.Context(), e.Kind, strKey, int64(intKey))
+	entity, err := datastore.GetEntity(r.Context(), e.Kind, key)
 	if err != nil {
 		errorJSON(w, "Failed to get entity["+key+"]", 500, err)
 		return
@@ -126,11 +114,12 @@ func convertViewEntity(kind *datastore.Kind, entity *datastore.Entity) ([]string
 
 	datum := Entity{}
 	key := entity.Key
-	if kind.KeyType == datastore.StringKeyType {
-		datum.Key = key.Name
+	if key.Name != "" {
+		datum.ViewKey = key.Name
 	} else {
-		datum.Key = fmt.Sprintf("%d", key.ID)
+		datum.ViewKey = fmt.Sprintf("%d", key.ID)
 	}
+	datum.RealKey = key.Encode()
 
 	datum.Values = make([]Value, len(kind.Properties))
 	datum.Types = make([]ViewType, len(kind.Properties))
@@ -197,20 +186,20 @@ func convertViewEntities(kind *datastore.Kind, entities []*datastore.Entity) ([]
 
 	data := make([]*Entity, len(entities))
 	for idx, entity := range entities {
+
 		datum := Entity{}
 		key := entity.Key
-		kv := ""
-		if kind.KeyType == datastore.StringKeyType {
-			datum.Key = key.Name
-			kv = cutData(key.Name)
+
+		if key.Name == "" {
+			datum.ViewKey = fmt.Sprintf("%d", key.ID)
 		} else {
-			datum.Key = fmt.Sprintf("%d", key.ID)
-			kv = datum.Key
+			datum.ViewKey = cutData(key.Name)
 		}
+		datum.RealKey = key.Encode()
 
 		vals := make([]Value, len(kind.Properties)+1)
 		keyVal := Value{}
-		keyVal.View = kv
+		keyVal.View = datum.ViewKey
 		vals[0] = keyVal
 
 		for jdx, prop := range kind.Properties {
